@@ -28,22 +28,28 @@ fn main() {
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     let vert_shader = renderer::Shader::from_vert_source(
-        &CString::new(include_str!("../shaders/object_vs.glsl")).unwrap(),
+        &CString::new(include_str!("../res/shaders/object_vs.glsl")).unwrap(),
     )
     .unwrap();
 
     let frag_shader = renderer::Shader::from_frag_source(
-        &CString::new(include_str!("../shaders/object_fs.glsl")).unwrap(),
+        &CString::new(include_str!("../res/shaders/object_fs.glsl")).unwrap(),
     )
     .unwrap();
 
     let shader_program = renderer::Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
 
     let vertices: Vec<f32> = vec![
-            // positions      // colors
-        0.5, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
-        -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
-        0.0,  0.5, 0.0,   0.0, 0.0, 1.0    // top
+        // positions      // colors
+        0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
+        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
+        0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
+    ];
+
+    let texCoords: Vec<f32>= vec![
+        0.0, 0.0,
+        1.0, 0.0,
+        0.5, 1.0 
     ];
 
     let mut vbo: gl::types::GLuint = 0;
@@ -82,10 +88,12 @@ fn main() {
 
         gl::EnableVertexAttribArray(1);
         gl::VertexAttribPointer(
-            1, 3,
-            gl::FLOAT, gl::FALSE,
-            (6*std::mem::size_of::<f32>())as gl::types::GLint,
-            (3*std::mem::size_of::<f32>()) as *const gl::types::GLvoid
+            1,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            (6 * std::mem::size_of::<f32>()) as gl::types::GLint,
+            (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid,
         );
 
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
