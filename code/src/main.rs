@@ -11,29 +11,42 @@ fn main() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
+    use std::io::Cursor;
+let image = image::load(Cursor::new(&include_bytes!("../res/techno.png")),
+                        image::ImageFormat::Png).unwrap().to_rgba8();
+let image_dimensions = image.dimensions();
+let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
+
+let texture = glium::texture::SrgbTexture2d::new(&display, image).unwrap();
+
     #[derive(Copy, Clone)]
     struct Vertex {
         position: [f32; 2],
         color: [f32; 4],
+        tex_coords: [f32; 2],
     }
 
-    implement_vertex!(Vertex, position, color);
+    implement_vertex!(Vertex, position, color, tex_coords);
 
     let vertex1 = Vertex {
         position: [0.5, -0.5],
         color: [0.0, 0.0, 1.0, 1.0],
+        tex_coords: [0.0, 0.0],
     };
     let vertex2 = Vertex {
         position: [0.5, 0.5],
         color: [0.0, 1.0, 0.0, 1.0],
+        tex_coords: [0.0, 1.0]
     };
     let vertex3 = Vertex {
         position: [-0.5, -0.5],
         color: [1.0, 0.0, 1.0, 1.0],
+        tex_coords: [1.0, 0.0]
     };
     let vertex4 = Vertex {
         position: [-0.5, 0.5],
         color: [0.0, 0.0, 1.0, 1.0],
+        tex_coords: [1.0, 1.0]
     };
     let shape = vec![vertex1, vertex2, vertex3, vertex4];
 
@@ -46,12 +59,15 @@ fn main() {
 
     in vec2 position;
     in vec4 color; 
+    in vec2 tex_coords;
 
     out vec4 ourColor;
+    out vec2 v_tex_coords;
 
     uniform mat4 matrix;
 
     void main() {
+        v_tex_coords = tex_coords;
         ourColor=color;
         gl_Position = matrix * vec4(position, 0.0, 1.0);
     }
@@ -60,11 +76,15 @@ fn main() {
     let fragment_shader_src = r#"
     #version 140
 
+    in vec2 v_tex_coords;
+    
     out vec4 fragColor;
     in vec4 ourColor;
 
+    uniform sampler2D tex;
+
     void main() {
-        fragColor = ourColor;
+        fragColor = texture(tex, v_tex_coords);
     }
     "#;
 
@@ -86,6 +106,7 @@ fn main() {
                 [0.0, 0.0, 1.0, 0.0],
                 [ t , 0.0, 0.0, 1.0f32],
             ],
+            tex: &texture,
         };
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 1.0, 1.0);
