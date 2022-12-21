@@ -2,6 +2,8 @@
 extern crate glium;
 extern crate image;
 
+mod texture;
+
 fn main() {
     println!("Hello, world!");
     use glium::{glutin, Surface};
@@ -11,13 +13,14 @@ fn main() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
-    use std::io::Cursor;
-let image = image::load(Cursor::new(&include_bytes!("../res/techno.png")),
-                        image::ImageFormat::Png).unwrap().to_rgba8();
-let image_dimensions = image.dimensions();
-let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
+// let image = image::load(Cursor::new(&include_bytes!("../res/techno.png")),
+//                         image::ImageFormat::Png).unwrap().to_rgba8();
+// let image_dimensions = image.dimensions();
+// let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
 
-let texture = glium::texture::SrgbTexture2d::new(&display, image).unwrap();
+// let texture = glium::texture::SrgbTexture2d::new(&display, image).unwrap();
+
+    let texture = texture::Texture::new("C:\\Users\\Lilit\\Desktop\\ubiland\\code\\res\\techno.png", &display);
 
     #[derive(Copy, Clone)]
     struct Vertex {
@@ -77,7 +80,7 @@ let texture = glium::texture::SrgbTexture2d::new(&display, image).unwrap();
     #version 140
 
     in vec2 v_tex_coords;
-    
+
     out vec4 fragColor;
     in vec4 ourColor;
 
@@ -106,7 +109,7 @@ let texture = glium::texture::SrgbTexture2d::new(&display, image).unwrap();
                 [0.0, 0.0, 1.0, 0.0],
                 [ t , 0.0, 0.0, 1.0f32],
             ],
-            tex: &texture,
+            tex: &texture.texture,
         };
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 1.0, 1.0);
