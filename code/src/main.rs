@@ -13,13 +13,6 @@ fn main() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
-// let image = image::load(Cursor::new(&include_bytes!("../res/techno.png")),
-//                         image::ImageFormat::Png).unwrap().to_rgba8();
-// let image_dimensions = image.dimensions();
-// let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
-
-// let texture = glium::texture::SrgbTexture2d::new(&display, image).unwrap();
-
     let texture = texture::Texture::new("C:\\Users\\Lilit\\Desktop\\ubiland\\code\\res\\techno.png", &display);
 
     #[derive(Copy, Clone)]
@@ -31,31 +24,53 @@ fn main() {
 
     implement_vertex!(Vertex, position, color, tex_coords);
 
-    let vertex1 = Vertex {
+    // let vertex1 = Vertex {
+    //     position: [0.5, -0.5],
+    //     color: [0.0, 0.0, 1.0, 1.0],
+    //     tex_coords: [0.0, 0.0],
+    // };
+    // let vertex2 = Vertex {
+    //     position: [0.5, 0.5],
+    //     color: [0.0, 1.0, 0.0, 1.0],
+    //     tex_coords: [0.0, 1.0]
+    // };
+    // let vertex3 = Vertex {
+    //     position: [-0.5, -0.5],
+    //     color: [1.0, 0.0, 1.0, 1.0],
+    //     tex_coords: [1.0, 0.0]
+    // };
+    // let vertex4 = Vertex {
+    //     position: [-0.5, 0.5],
+    //     color: [0.0, 0.0, 1.0, 1.0],
+    //     tex_coords: [1.0, 1.0]
+    // };
+    // let shape = vec![vertex1, vertex2, vertex3, vertex4];
+
+    // let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
+
+    // let indices = glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip);
+
+    let tvertex1 = Vertex {
         position: [0.5, -0.5],
         color: [0.0, 0.0, 1.0, 1.0],
         tex_coords: [0.0, 0.0],
     };
-    let vertex2 = Vertex {
+    let tvertex2 = Vertex {
         position: [0.5, 0.5],
         color: [0.0, 1.0, 0.0, 1.0],
-        tex_coords: [0.0, 1.0]
+        tex_coords: [0.0, 0.0]
     };
-    let vertex3 = Vertex {
+    let tvertex3 = Vertex {
         position: [-0.5, -0.5],
         color: [1.0, 0.0, 1.0, 1.0],
         tex_coords: [1.0, 0.0]
     };
-    let vertex4 = Vertex {
-        position: [-0.5, 0.5],
-        color: [0.0, 0.0, 1.0, 1.0],
-        tex_coords: [1.0, 1.0]
-    };
-    let shape = vec![vertex1, vertex2, vertex3, vertex4];
 
-    let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
+    let tshape=vec![tvertex1, tvertex2, tvertex3];
 
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip);
+    let tvertex_buffer = glium::VertexBuffer::new(&display, &tshape).unwrap();
+
+    let tindices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
     let vertex_shader_src = r#"
     #version 140
@@ -71,7 +86,7 @@ fn main() {
 
     void main() {
         v_tex_coords = tex_coords;
-        ourColor=color;
+        ourColor = color;
         gl_Position = matrix * vec4(position, 0.0, 1.0);
     }
     "#;
@@ -83,11 +98,15 @@ fn main() {
 
     out vec4 fragColor;
     in vec4 ourColor;
+    uniform bool isTex;
 
     uniform sampler2D tex;
 
     void main() {
-        fragColor = texture(tex, v_tex_coords);
+        if(isTex)
+            fragColor = texture(tex, v_tex_coords);
+        else
+            fragColor = ourColor;
     }
     "#;
 
@@ -102,23 +121,47 @@ fn main() {
             t = -0.5;
         }
 
-        let uniforms = uniform! {
+        // let uniforms = uniform! {
+        //     matrix: [
+        //         [1.0, 0.0, 0.0, 0.0],
+        //         [0.0, 1.0, 0.0, 0.0],
+        //         [0.0, 0.0, 1.0, 0.0],
+        //         [ t , 0.0, 0.0, 1.0],
+        //     ],
+        //     isTex: true,
+        //     tex: &texture.texture,
+        // };
+
+        let tuniforms = uniform! {
             matrix: [
                 [1.0, 0.0, 0.0, 0.0],
                 [0.0, 1.0, 0.0, 0.0],
                 [0.0, 0.0, 1.0, 0.0],
-                [ t , 0.0, 0.0, 1.0f32],
+                [ t-0.5 , 0.0, 0.0, 1.0],
             ],
-            tex: &texture.texture,
+            isTex: false,
         };
+
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 1.0, 1.0);
-        target
+        // target
+        //     .draw(
+        //         &vertex_buffer,
+        //         &indices,
+        //         &program,
+        //         &uniforms,
+        //         &Default::default(),
+        //     )
+        //     .unwrap();
+
+            texture.draw(&mut target, &program);
+
+            target
             .draw(
-                &vertex_buffer,
-                &indices,
+                &tvertex_buffer,
+                &tindices,
                 &program,
-                &uniforms,
+                &tuniforms,
                 &Default::default(),
             )
             .unwrap();
