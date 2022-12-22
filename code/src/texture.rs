@@ -4,6 +4,9 @@ use std::io::Cursor;
 use std::fs::read;
 use glium::*;
 
+const SCREEN_HEIGHT: f32 = 600.0;
+const SCREEN_WIDTH: f32 = 720.0;
+
 #[derive(Copy, Clone)]
 struct Vertex {
     position: [f32; 2],
@@ -37,25 +40,30 @@ impl Texture {
 
         let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
 
-        let vertex1 = Vertex {
-            position: [0.5, -0.5],
+        let x=((image_dimensions.0 as f32)*2./SCREEN_WIDTH)/2.;
+        let y=((image_dimensions.1 as f32)*2./SCREEN_HEIGHT)/2.;
+
+        println!("x: {}, y: {}", x, y);
+
+        let vertex1 = Vertex { //btm right
+            position: [x, -y],
             color: [0.0, 0.0, 1.0, 1.0],
-            tex_coords: [0.0, 0.0],
+            tex_coords: [1.0, 0.0],
         };
-        let vertex2 = Vertex {
-            position: [0.5, 0.5],
+        let vertex2 = Vertex { // top right
+            position: [x, y],
             color: [0.0, 1.0, 0.0, 1.0],
-            tex_coords: [0.0, 1.0]
-        };
-        let vertex3 = Vertex {
-            position: [-0.5, -0.5],
-            color: [1.0, 0.0, 1.0, 1.0],
-            tex_coords: [1.0, 0.0]
-        };
-        let vertex4 = Vertex {
-            position: [-0.5, 0.5],
-            color: [0.0, 0.0, 1.0, 1.0],
             tex_coords: [1.0, 1.0]
+        };
+        let vertex3 = Vertex { //btm left
+            position: [-x, -y],
+            color: [1.0, 0.0, 1.0, 1.0],
+            tex_coords: [0.0, 0.0]
+        };
+        let vertex4 = Vertex { //top left
+            position: [-x, y],
+            color: [0.0, 0.0, 1.0, 1.0],
+            tex_coords: [0.0, 1.0]
         };
 
         let shape= vec![vertex1, vertex2, vertex3, vertex4];
