@@ -1,0 +1,4 @@
+[ ] get rid of that ugly absolute path
+[ ] add the other constructor to texture with clip
+[ ] input mgr
+[ ] maybe an entity class? look into it

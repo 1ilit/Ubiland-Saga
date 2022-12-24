@@ -19,8 +19,8 @@ implement_vertex!(Vertex, position, color, tex_coords);
 pub struct Texture {
     pub width: u32,
     pub height: u32,
-    pub texture: glium::texture::SrgbTexture2d,
 
+    texture: glium::texture::SrgbTexture2d,
     vertex_buffer: glium::VertexBuffer<Vertex>,
     index_buffer: glium::index::NoIndices,
 }

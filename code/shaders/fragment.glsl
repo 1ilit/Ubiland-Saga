@@ -9,8 +9,12 @@ uniform bool isTex;
 uniform sampler2D tex;
 
 void main() {
-    if(isTex)
+    if(isTex){
         fragColor = texture(tex, v_tex_coords);
+        if(v_tex_coords.x>0.5){
+            discard;
+        }
+    }
     else
         fragColor = ourColor;
 }
