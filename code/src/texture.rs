@@ -16,13 +16,22 @@ struct Vertex {
 
 implement_vertex!(Vertex, position, color, tex_coords);
 
+struct Rect{
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+}
+
 pub struct Texture {
-    pub width: u32,
-    pub height: u32,
+    pub width: f32,
+    pub height: f32,
 
     texture: glium::texture::SrgbTexture2d,
     vertex_buffer: glium::VertexBuffer<Vertex>,
     index_buffer: glium::index::NoIndices,
+    clipped: bool,
+    clip_rect: Rect,
 }
 
 impl Texture {
@@ -69,12 +78,28 @@ impl Texture {
         let shape= vec![vertex1, vertex2, vertex3, vertex4];
 
         Self{
-            width: image_dimensions.0,
-            height: image_dimensions.1,
+            width: image_dimensions.0 as f32,
+            height: image_dimensions.1 as f32,
             texture: texture,
             vertex_buffer: glium::VertexBuffer::new(display, &shape).unwrap(),
-            index_buffer: glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip)
+            index_buffer: glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip),
+            clipped: false,
+            clip_rect: Rect{x: 0.0, y: 0.0, width: 1.0, height: 1.0},
         }
+    }
+
+    
+    pub fn clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
+
+        let x0=x/self.width;
+        let y0=y/self.height;
+        let w0=w/self.width;
+        let h0=h/self.height;
+
+        println!("{}, {}, {}, {}", x0, y0, w0, h0);
+
+        self.clipped=true;
+        self.clip_rect=Rect{x: x0, y: y0, width: w0, height: h0};
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program){
@@ -87,6 +112,11 @@ impl Texture {
             ],
             isTex: true,
             tex: &self.texture,
+            clipped: self.clipped,
+            c_x: self.clip_rect.x,
+            c_y: self.clip_rect.y,
+            c_w: self.clip_rect.width,
+            c_h: self.clip_rect.height,
         };
         target.draw(
                 &self.vertex_buffer,

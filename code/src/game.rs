@@ -8,10 +8,11 @@ pub struct Game{
 
 impl Game {
     pub fn new(display: &Display)->Self{
-        let tex=Texture::new(
+        let mut tex=Texture::new(
             "C:\\Users\\Lilit\\Desktop\\ubiland\\code\\res\\rect.png",
             display,
         );
+        tex.clip(0.0, 0.0, 32.0, 32.0);
         Game { texture: tex }
     }
 
