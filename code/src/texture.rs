@@ -88,7 +88,13 @@ impl Texture {
         }
     }
 
-    
+    /**
+     * follows tex coords
+     * 0, 1         1, 1
+     *  |
+     *  |
+     * 0, 0 _______ 1, 0
+     */
     pub fn clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
 
         let x0=x/self.width;

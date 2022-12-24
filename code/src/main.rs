@@ -4,6 +4,7 @@ extern crate image;
 
 mod game;
 mod texture;
+mod input_mgr;
 
 fn main() {
     println!("Hello, world!");
@@ -38,7 +39,9 @@ fn main() {
                     device_id: _,
                     input,
                     is_synthetic: _,
-                } => println!("{:?}, {:?}", input.state, input.virtual_keycode),
+                } => {
+                    game.input.update(input.state, input.virtual_keycode);
+                },
                 glutin::event::WindowEvent::CloseRequested => {
                     *control_flow = glutin::event_loop::ControlFlow::Exit;
                     return;

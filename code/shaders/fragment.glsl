@@ -17,10 +17,10 @@ void main() {
     if(isTex){
         fragColor = texture(tex, v_tex_coords);
         if(clipped){
-            if(v_tex_coords.x<0||
+            if(v_tex_coords.x<c_x ||
                v_tex_coords.x>c_x+c_w || 
-               v_tex_coords.y<0||
-               v_tex_coords.y<1-(c_y+c_h))
+               v_tex_coords.y>c_y+c_h||
+               v_tex_coords.y<c_y)
                 discard;
         }
     }
