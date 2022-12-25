@@ -3,19 +3,37 @@ use glium::{Display, Frame, Program};
 use crate::input_mgr::InputManager;
 use crate::texture::Texture;
 
+pub struct Player {
+    pub texture: Texture,
+    pub position: [f32; 2],
+}
+
+impl Player {
+    pub fn new(display: &Display) -> Self {
+        let texture = Texture::new("./res/star.png", display);
+        Player {
+            texture: texture,
+            position: [0.0, 0.0],
+        }
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program){
+        self.texture.draw(target, program);
+    }
+}
+
 pub struct Game {
-    texture: Texture,
+    player: Player,
     pub input: InputManager,
 }
 
 impl Game {
     pub fn new(display: &Display) -> Self {
-        let mut tex = Texture::new("./res/rect.png", display);
-        tex.clip(0.0, 0.0, 32.0, 32.0);
+        let p = Player::new(display);
         let input = InputManager::new();
 
         Game {
-            texture: tex,
+            player: p,
             input: input,
         }
     }
@@ -30,6 +48,6 @@ impl Game {
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        self.texture.draw(target, program);
+        self.player.draw(target, program);
     }
 }

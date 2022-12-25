@@ -1,8 +1,8 @@
 extern crate glium;
 extern crate image;
-use std::io::Cursor;
-use std::fs::read;
 use glium::*;
+use std::fs::read;
+use std::io::Cursor;
 
 const SCREEN_HEIGHT: f32 = 600.0;
 const SCREEN_WIDTH: f32 = 720.0;
@@ -16,7 +16,7 @@ struct Vertex {
 
 implement_vertex!(Vertex, position, color, tex_coords);
 
-struct Rect{
+struct Rect {
     x: f32,
     y: f32,
     width: f32,
@@ -49,42 +49,51 @@ impl Texture {
 
         let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
 
-        let x=((image_dimensions.0 as f32)*2./SCREEN_WIDTH)/2.;
-        let y=((image_dimensions.1 as f32)*2./SCREEN_HEIGHT)/2.;
+        let x = ((image_dimensions.0 as f32) * 2. / SCREEN_WIDTH) / 2.;
+        let y = ((image_dimensions.1 as f32) * 2. / SCREEN_HEIGHT) / 2.;
 
         println!("x: {}, y: {}", x, y);
 
-        let vertex1 = Vertex { //btm right
+        let vertex1 = Vertex {
+            //btm right
             position: [x, -y],
             color: [0.0, 0.0, 1.0, 1.0],
             tex_coords: [1.0, 0.0],
         };
-        let vertex2 = Vertex { // top right
+        let vertex2 = Vertex {
+            // top right
             position: [x, y],
             color: [0.0, 1.0, 0.0, 1.0],
-            tex_coords: [1.0, 1.0]
+            tex_coords: [1.0, 1.0],
         };
-        let vertex3 = Vertex { //btm left
+        let vertex3 = Vertex {
+            //btm left
             position: [-x, -y],
             color: [1.0, 0.0, 1.0, 1.0],
-            tex_coords: [0.0, 0.0]
+            tex_coords: [0.0, 0.0],
         };
-        let vertex4 = Vertex { //top left
+        let vertex4 = Vertex {
+            //top left
             position: [-x, y],
             color: [0.0, 0.0, 1.0, 1.0],
-            tex_coords: [0.0, 1.0]
+            tex_coords: [0.0, 1.0],
         };
 
-        let shape= vec![vertex1, vertex2, vertex3, vertex4];
+        let shape = vec![vertex1, vertex2, vertex3, vertex4];
 
-        Self{
+        Self {
             width: image_dimensions.0 as f32,
             height: image_dimensions.1 as f32,
             texture: texture,
             vertex_buffer: glium::VertexBuffer::new(display, &shape).unwrap(),
             index_buffer: glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip),
             clipped: false,
-            clip_rect: Rect{x: 0.0, y: 0.0, width: 1.0, height: 1.0},
+            clip_rect: Rect {
+                x: 0.0,
+                y: 0.0,
+                width: 1.0,
+                height: 1.0,
+            },
         }
     }
 
@@ -96,19 +105,23 @@ impl Texture {
      * 0, 0 _______ 1, 0
      */
     pub fn clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
-
-        let x0=x/self.width;
-        let y0=y/self.height;
-        let w0=w/self.width;
-        let h0=h/self.height;
+        let x0 = x / self.width;
+        let y0 = y / self.height;
+        let w0 = w / self.width;
+        let h0 = h / self.height;
 
         println!("{}, {}, {}, {}", x0, y0, w0, h0);
 
-        self.clipped=true;
-        self.clip_rect=Rect{x: x0, y: y0, width: w0, height: h0};
+        self.clipped = true;
+        self.clip_rect = Rect {
+            x: x0,
+            y: y0,
+            width: w0,
+            height: h0,
+        };
     }
 
-    pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program){
+    pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
         let uniforms = uniform! {
             matrix: [
                 [1.0, 0.0, 0.0, 0.0],
@@ -124,12 +137,16 @@ impl Texture {
             c_w: self.clip_rect.width,
             c_h: self.clip_rect.height,
         };
-        target.draw(
+        target
+            .draw(
                 &self.vertex_buffer,
                 &self.index_buffer,
                 program,
                 &uniforms,
-                &Default::default(),
+                &glium::DrawParameters {
+                    blend: glium::Blend::alpha_blending(),
+                    ..Default::default()
+                },
             )
             .unwrap();
     }
