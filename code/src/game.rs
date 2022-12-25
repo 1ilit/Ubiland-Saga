@@ -1,6 +1,6 @@
-use glium::{ Display, Frame, Program};
+use glium::{Display, Frame, Program};
 
-use crate::input_mgr::{InputManager, Direction};
+use crate::input_mgr::InputManager;
 use crate::texture::Texture;
 
 pub struct Game {
@@ -21,7 +21,10 @@ impl Game {
     }
 
     pub fn update(&mut self) {
-        if self.input.dir_is_pressed(Direction::UP){
+        if self
+            .input
+            .key_went_up(glium::glutin::event::VirtualKeyCode::Up)
+        {
             println!("up is pressed");
         }
     }

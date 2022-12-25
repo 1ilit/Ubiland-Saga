@@ -1,41 +1,41 @@
 use glium::glutin::event::{ElementState, VirtualKeyCode};
 
-pub enum Direction {
-    UP = 0,
-    DOWN,
-    LEFT,
-    RIGHT,
-    SPACE,
-}
-
 pub struct InputManager {
-    keys: [bool; 5],
+    keys: [bool; 163],
+    prev_keys: [bool; 163],
 }
 
 impl InputManager {
     pub fn new() -> Self {
         InputManager {
-            keys: [false, false, false, false, false],
+            keys: [false; 163],
+            prev_keys: [false; 163],
         }
     }
 
-    pub fn dir_is_pressed(&self, key: Direction) -> bool {
-        self.keys[key as usize]
+    fn key_changed(&mut self, key: VirtualKeyCode) -> bool {
+        let temp = self.prev_keys[key as usize];
+        self.prev_keys[key as usize] = false;
+        temp
     }
 
-    pub fn update(&mut self, state: ElementState, key: Option<VirtualKeyCode>) {
-        let is_down = if state == ElementState::Released {
-            false
+    pub fn key_went_down(&mut self, key: VirtualKeyCode) -> bool {
+        self.keys[key as usize] && self.key_changed(key)
+    }
+
+    pub fn key_went_up(&mut self, key: VirtualKeyCode) -> bool {
+        !self.keys[key as usize] && self.key_changed(key)
+    }
+
+    pub fn update(&mut self, state: ElementState, key: VirtualKeyCode) {
+        if state != ElementState::Released {
+            if !self.keys[key as usize] {
+                self.keys[key as usize] = true;
+            }
         } else {
-            true
-        };
-        match key {
-            Some(VirtualKeyCode::Up) => self.keys[0] = is_down,
-            Some(VirtualKeyCode::Down) => self.keys[1] = is_down,
-            Some(VirtualKeyCode::Left) => self.keys[2] = is_down,
-            Some(VirtualKeyCode::Right) => self.keys[3] = is_down,
-            Some(VirtualKeyCode::Space) => self.keys[4] = is_down,
-            _ => return,
+            self.keys[key as usize] = false;
         }
+
+        self.prev_keys[key as usize] = state != ElementState::Pressed;
     }
 }

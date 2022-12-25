@@ -40,7 +40,7 @@ fn main() {
                     input,
                     is_synthetic: _,
                 } => {
-                    game.input.update(input.state, input.virtual_keycode);
+                    game.input.update(input.state, input.virtual_keycode.unwrap_or(glutin::event::VirtualKeyCode::Tab));
                 },
                 glutin::event::WindowEvent::CloseRequested => {
                     *control_flow = glutin::event_loop::ControlFlow::Exit;
