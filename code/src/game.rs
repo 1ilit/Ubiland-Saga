@@ -10,11 +10,16 @@ pub struct Player {
 
 impl Player {
     pub fn new(display: &Display) -> Self {
-        let texture = Texture::new("./res/star.png", display);
+        let mut texture = Texture::new("./res/star.png", display);
+        texture.scale(1.5);
         Player {
             texture: texture,
             position: [0.0, 0.0],
         }
+    }
+
+    pub fn update(&mut self){
+
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program){
@@ -44,7 +49,10 @@ impl Game {
             .key_went_up(glium::glutin::event::VirtualKeyCode::Up)
         {
             println!("up is pressed");
+            self.player.texture.set_position(60.0, 60.0);
+
         }
+        self.player.update();
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {

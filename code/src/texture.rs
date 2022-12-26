@@ -32,6 +32,7 @@ pub struct Texture {
     index_buffer: glium::index::NoIndices,
     clipped: bool,
     clip_rect: Rect,
+    matrix: [[f32; 4]; 4],
 }
 
 impl Texture {
@@ -94,6 +95,12 @@ impl Texture {
                 width: 1.0,
                 height: 1.0,
             },
+            matrix: [
+                [1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0f32],
+            ],
         }
     }
 
@@ -121,14 +128,31 @@ impl Texture {
         };
     }
 
+    pub fn scale(&mut self, factor: f32) {
+        self.matrix[0][0] *= factor;
+        self.matrix[1][1] *= factor;
+        self.matrix[2][2] *= factor;
+    }
+
+    pub fn translate(&mut self, x: f32, y: f32) {
+        let x0 = (x * 2. / SCREEN_WIDTH) / 2.;
+        let y0 = (y * 2. / SCREEN_HEIGHT) / 2.;
+
+        self.matrix[3][0] += x0;
+        self.matrix[3][1] += y0;
+    }
+
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        let x0 = (x * 2. / SCREEN_WIDTH) / 2.;
+        let y0 = (y * 2. / SCREEN_HEIGHT) / 2.;
+
+        self.matrix[3][0] = x0;
+        self.matrix[3][1] = y0;
+    }
+
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
         let uniforms = uniform! {
-            matrix: [
-                [1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0f32],
-            ],
+            matrix: self.matrix,
             isTex: true,
             tex: &self.texture,
             clipped: self.clipped,

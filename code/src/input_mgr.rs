@@ -19,6 +19,10 @@ impl InputManager {
         temp
     }
 
+    pub fn key_down(&self, key: VirtualKeyCode)->bool{
+        self.keys[key as usize]
+    }
+
     pub fn key_went_down(&mut self, key: VirtualKeyCode) -> bool {
         self.keys[key as usize] && self.key_changed(key)
     }
