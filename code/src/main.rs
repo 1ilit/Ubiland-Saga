@@ -8,12 +8,12 @@ mod input_mgr;
 
 fn main() {
     println!("Hello, world!");
-    use glium::glutin::dpi::LogicalSize;
+    use glium::glutin::dpi::PhysicalSize;
     use glium::{glutin, Surface};
 
     let event_loop = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()
-        .with_inner_size(LogicalSize::new(720, 600))
+        .with_inner_size(PhysicalSize::new(720, 600))
         .with_title(format!("hi"));
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();

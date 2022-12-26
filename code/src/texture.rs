@@ -132,19 +132,22 @@ impl Texture {
         self.matrix[0][0] *= factor;
         self.matrix[1][1] *= factor;
         self.matrix[2][2] *= factor;
+
+        self.height *= factor;
+        self.width *= factor;
     }
 
     pub fn translate(&mut self, x: f32, y: f32) {
-        let x0 = (x * 2. / SCREEN_WIDTH) / 2.;
-        let y0 = (y * 2. / SCREEN_HEIGHT) / 2.;
+        let x0 = x * 2. / SCREEN_WIDTH;
+        let y0 = y * 2. / SCREEN_HEIGHT;
 
         self.matrix[3][0] += x0;
         self.matrix[3][1] += y0;
     }
 
     pub fn set_position(&mut self, x: f32, y: f32) {
-        let x0 = (x * 2. / SCREEN_WIDTH) / 2.;
-        let y0 = (y * 2. / SCREEN_HEIGHT) / 2.;
+        let x0 = x * 2. / SCREEN_WIDTH;
+        let y0 = y * 2. / SCREEN_HEIGHT;
 
         self.matrix[3][0] = x0;
         self.matrix[3][1] = y0;

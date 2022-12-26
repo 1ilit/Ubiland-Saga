@@ -6,23 +6,34 @@ use crate::texture::Texture;
 pub struct Player {
     pub texture: Texture,
     pub position: [f32; 2],
+    pub velocity: [f32; 2],
 }
 
 impl Player {
     pub fn new(display: &Display) -> Self {
-        let mut texture = Texture::new("./res/star.png", display);
-        texture.scale(1.5);
+        let texture = Texture::new("./res/star.png", display);
         Player {
             texture: texture,
             position: [0.0, 0.0],
+            velocity: [0.0, 0.0],
         }
     }
 
-    pub fn update(&mut self){
+    pub fn update(&mut self) {
+        self.position[0] += self.velocity[0];
+        self.position[1] += self.velocity[1];
 
+        if self.position[1] + self.velocity[1] - self.texture.height / 2.0 > -300.0 {
+            self.velocity[1] -= 0.4;
+        } else {
+            self.velocity[1] = 0.0;
+        }
+
+        self.texture
+            .set_position(self.position[0], self.position[1]);
     }
 
-    pub fn draw(&mut self, target: &mut Frame, program: &Program){
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.texture.draw(target, program);
     }
 }
@@ -50,7 +61,6 @@ impl Game {
         {
             println!("up is pressed");
             self.player.texture.set_position(60.0, 60.0);
-
         }
         self.player.update();
     }
