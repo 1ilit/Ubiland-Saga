@@ -1,4 +1,6 @@
 // #[macro_use]
+
+use crate::game::ScreenMgr;
 extern crate glium;
 extern crate image;
 
@@ -26,7 +28,8 @@ fn main() {
         glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
             .unwrap();
 
-    let mut game = game::Game::new(&display);
+    //let mut game = game::Game::new(&display);
+    let mut screen_mgr=ScreenMgr::new(&display);
 
     event_loop.run(move |ev, _, control_flow| {
         let next_frame_time =
@@ -40,7 +43,7 @@ fn main() {
                     input,
                     is_synthetic: _,
                 } => {
-                    game.input.update(input.state, input.virtual_keycode.unwrap_or(glutin::event::VirtualKeyCode::Tab));
+                    screen_mgr.input.update(input.state, input.virtual_keycode.unwrap_or(glutin::event::VirtualKeyCode::Tab));
                 },
                 glutin::event::WindowEvent::CloseRequested => {
                     *control_flow = glutin::event_loop::ControlFlow::Exit;
@@ -51,13 +54,13 @@ fn main() {
             _ => (),
         }
         //update game
-        game.update();
+        screen_mgr.update();
 
         let mut target = display.draw();
         target.clear_color(0.2, 0.2, 0.2, 1.0);
 
         //draw game
-        game.draw(&mut target, &program);
+        screen_mgr.draw(&mut target, &program);
 
         target.finish().unwrap();
     });

@@ -24,13 +24,13 @@ impl Player {
         self.position[0] += self.velocity[0];
         self.position[1] += self.velocity[1];
 
-        if self.position[1] + self.velocity[1] - self.texture.height / 2.0 > -(SCREEN_HEIGHT/2.) {
+        if self.position[1] + self.velocity[1] - self.texture.height / 2.0 > -(SCREEN_HEIGHT / 2.) {
             self.velocity[1] -= 0.4;
         } else {
             self.velocity[1] = 0.0;
         }
 
-        if input.key_down(VirtualKeyCode::Up){
+        if input.key_down(VirtualKeyCode::Up) {
             self.velocity[1] = 7.;
         }
 
@@ -43,27 +43,99 @@ impl Player {
     }
 }
 
+pub struct StartScreen {
+    tex: Texture,
+    pub started: bool,
+}
+
+impl StartScreen {
+    pub fn new(display: &Display) -> Self {
+        let tex = Texture::new("./res/techno.png", display);
+        StartScreen {
+            tex: tex,
+            started: false,
+        }
+    }
+
+    pub fn update(&mut self, input: &mut InputManager) {
+        if input.key_went_up(VirtualKeyCode::Return) {
+            self.started = true;
+        }
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.tex.draw(target, program);
+    }
+}
+
 pub struct Game {
     player: Player,
-    pub input: InputManager,
 }
 
 impl Game {
     pub fn new(display: &Display) -> Self {
         let p = Player::new(display);
-        let input = InputManager::new();
 
-        Game {
-            player: p,
-            input: input,
-        }
+        Game { player: p }
     }
 
-    pub fn update(&mut self) {
-        self.player.update(&mut self.input);
+    pub fn update(&mut self, input: &mut InputManager) {
+        self.player.update(input);
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.player.draw(target, program);
+    }
+}
+
+enum CurrentScreen {
+    Start,
+    Play,
+}
+
+pub struct ScreenMgr {
+    pub game: Game,
+    pub start: StartScreen,
+    pub input: InputManager,
+    current_screen: CurrentScreen,
+}
+
+impl ScreenMgr {
+    pub fn new(display: &Display) -> Self {
+        let game = Game::new(display);
+        let start = StartScreen::new(display);
+        let input = InputManager::new();
+
+        ScreenMgr {
+            game: game,
+            start: start,
+            input: input,
+            current_screen: CurrentScreen::Start,
+        }
+    }
+
+    pub fn update(&mut self) {
+        match self.current_screen {
+            CurrentScreen::Start => {
+                self.start.update(&mut self.input);
+                if self.start.started {
+                    self.current_screen = CurrentScreen::Play;
+                }
+            }
+            CurrentScreen::Play => {
+                self.game.update(&mut self.input);
+            }
+        }
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        match self.current_screen {
+            CurrentScreen::Start => {
+                self.start.draw(target, program);
+            }
+            CurrentScreen::Play => {
+                self.game.draw(target, program);
+            }
+        }
     }
 }

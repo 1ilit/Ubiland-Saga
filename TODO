@@ -1,3 +1,5 @@
-[ ] maybe an entity class? look into it
-[ ] scene mgr
-[ ] sketch
+[] make input mgr a sigleton
+[] better names for structs and enums
+[] make an animated tex cclass
+[] clean up the code and move structs to diff files
+[] maybe getters and setters?
