@@ -1,7 +1,8 @@
+use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::texture::Texture;
+use crate::texture::{Texture, SCREEN_HEIGHT};
 
 pub struct Player {
     pub texture: Texture,
@@ -19,14 +20,18 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, input: &mut InputManager) {
         self.position[0] += self.velocity[0];
         self.position[1] += self.velocity[1];
 
-        if self.position[1] + self.velocity[1] - self.texture.height / 2.0 > -300.0 {
+        if self.position[1] + self.velocity[1] - self.texture.height / 2.0 > -(SCREEN_HEIGHT/2.) {
             self.velocity[1] -= 0.4;
         } else {
             self.velocity[1] = 0.0;
+        }
+
+        if input.key_down(VirtualKeyCode::Up){
+            self.velocity[1] = 7.;
         }
 
         self.texture
@@ -55,14 +60,7 @@ impl Game {
     }
 
     pub fn update(&mut self) {
-        if self
-            .input
-            .key_went_up(glium::glutin::event::VirtualKeyCode::Up)
-        {
-            println!("up is pressed");
-            self.player.texture.set_position(60.0, 60.0);
-        }
-        self.player.update();
+        self.player.update(&mut self.input);
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {

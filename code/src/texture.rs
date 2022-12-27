@@ -4,8 +4,8 @@ use glium::*;
 use std::fs::read;
 use std::io::Cursor;
 
-const SCREEN_HEIGHT: f32 = 600.0;
-const SCREEN_WIDTH: f32 = 720.0;
+pub const SCREEN_HEIGHT: f32 = 576.0;
+pub const SCREEN_WIDTH: f32 = 768.0;
 
 #[derive(Copy, Clone)]
 struct Vertex {
@@ -52,8 +52,6 @@ impl Texture {
 
         let x = ((image_dimensions.0 as f32) * 2. / SCREEN_WIDTH) / 2.;
         let y = ((image_dimensions.1 as f32) * 2. / SCREEN_HEIGHT) / 2.;
-
-        println!("x: {}, y: {}", x, y);
 
         let vertex1 = Vertex {
             //btm right
