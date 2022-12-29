@@ -6,10 +6,8 @@ use glium::{uniform, Surface};
 use crate::shape::Rectangle;
 
 struct Rect {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
+    start: [f32; 2],
+    size: [f32; 2],
 }
 
 pub struct Texture {
@@ -45,36 +43,18 @@ impl Texture {
             texture: texture,
             clipped: false,
             clip_rect: Rect {
-                x: 0.0,
-                y: 0.0,
-                width: 1.0,
-                height: 1.0,
+                start: [0.0, 0.0],
+                size: [1.0, 1.0],
             },
             rect: rect,
         }
     }
 
-    /**
-     * follows tex coords
-     * 0, 1         1, 1
-     *  |
-     *  |
-     * 0, 0 _______ 1, 0
-     */
     pub fn clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
-        let x0 = x / self.width;
-        let y0 = y / self.height;
-        let w0 = w / self.width;
-        let h0 = h / self.height;
-
-        println!("{}, {}, {}, {}", x0, y0, w0, h0);
-
         self.clipped = true;
         self.clip_rect = Rect {
-            x: x0,
-            y: y0,
-            width: w0,
-            height: h0,
+            start: [x, y],
+            size: [w, h],
         };
     }
 
@@ -99,10 +79,8 @@ impl Texture {
             isTex: true,
             tex: &self.texture,
             clipped: self.clipped,
-            c_x: self.clip_rect.x,
-            c_y: self.clip_rect.y,
-            c_w: self.clip_rect.width,
-            c_h: self.clip_rect.height,
+            start: self.clip_rect.start,
+            size: self.clip_rect.size,
         };
         target
             .draw(

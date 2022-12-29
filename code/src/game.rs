@@ -52,10 +52,11 @@ pub struct StartScreen {
 
 impl StartScreen {
     pub fn new(display: &Display) -> Self {
-        let tex = Texture::new("./res/techno.png", display);
+        let mut tex = Texture::new("./res/techno.png", display);
+        tex.clip(32.0, 0.0, 64.0, 64.0);
         let mut rect = Rectangle::new(display, 300, 300);
         rect.set_color(display, [0.8, 0.5, 0.3, 1.0]);
-        rect.set_gradient(
+        rect.set_gradient( 
             display,
             [0.0, 0.0, 1.0, 1.0],
             [0.0, 1.0, 0.0, 1.0],
