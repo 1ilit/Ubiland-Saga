@@ -1,20 +1,9 @@
-extern crate glium;
-extern crate image;
-use glium::*;
 use std::fs::read;
 use std::io::Cursor;
 
-pub const SCREEN_HEIGHT: f32 = 576.0;
-pub const SCREEN_WIDTH: f32 = 768.0;
+use glium::{uniform, Surface};
 
-#[derive(Copy, Clone)]
-struct Vertex {
-    position: [f32; 2],
-    color: [f32; 4],
-    tex_coords: [f32; 2],
-}
-
-implement_vertex!(Vertex, position, color, tex_coords);
+use crate::shape::Rectangle;
 
 struct Rect {
     x: f32,
@@ -28,11 +17,9 @@ pub struct Texture {
     pub height: f32,
 
     texture: glium::texture::SrgbTexture2d,
-    vertex_buffer: glium::VertexBuffer<Vertex>,
-    index_buffer: glium::index::NoIndices,
     clipped: bool,
     clip_rect: Rect,
-    matrix: [[f32; 4]; 4],
+    rect: Rectangle,
 }
 
 impl Texture {
@@ -50,42 +37,12 @@ impl Texture {
 
         let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
 
-        let x = ((image_dimensions.0 as f32) * 2. / SCREEN_WIDTH) / 2.;
-        let y = ((image_dimensions.1 as f32) * 2. / SCREEN_HEIGHT) / 2.;
-
-        let vertex1 = Vertex {
-            //btm right
-            position: [x, -y],
-            color: [0.0, 0.0, 1.0, 1.0],
-            tex_coords: [1.0, 0.0],
-        };
-        let vertex2 = Vertex {
-            // top right
-            position: [x, y],
-            color: [0.0, 1.0, 0.0, 1.0],
-            tex_coords: [1.0, 1.0],
-        };
-        let vertex3 = Vertex {
-            //btm left
-            position: [-x, -y],
-            color: [1.0, 0.0, 1.0, 1.0],
-            tex_coords: [0.0, 0.0],
-        };
-        let vertex4 = Vertex {
-            //top left
-            position: [-x, y],
-            color: [0.0, 0.0, 1.0, 1.0],
-            tex_coords: [0.0, 1.0],
-        };
-
-        let shape = vec![vertex1, vertex2, vertex3, vertex4];
+        let rect = Rectangle::new(display, image_dimensions.0, image_dimensions.1);
 
         Self {
             width: image_dimensions.0 as f32,
             height: image_dimensions.1 as f32,
             texture: texture,
-            vertex_buffer: glium::VertexBuffer::new(display, &shape).unwrap(),
-            index_buffer: glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip),
             clipped: false,
             clip_rect: Rect {
                 x: 0.0,
@@ -93,12 +50,7 @@ impl Texture {
                 width: 1.0,
                 height: 1.0,
             },
-            matrix: [
-                [1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0f32],
-            ],
+            rect: rect,
         }
     }
 
@@ -127,33 +79,23 @@ impl Texture {
     }
 
     pub fn scale(&mut self, factor: f32) {
-        self.matrix[0][0] *= factor;
-        self.matrix[1][1] *= factor;
-        self.matrix[2][2] *= factor;
+        self.rect.scale(factor);
 
         self.height *= factor;
         self.width *= factor;
     }
 
     pub fn translate(&mut self, x: f32, y: f32) {
-        let x0 = x * 2. / SCREEN_WIDTH;
-        let y0 = y * 2. / SCREEN_HEIGHT;
-
-        self.matrix[3][0] += x0;
-        self.matrix[3][1] += y0;
+        self.rect.translate(x, y);
     }
 
     pub fn set_position(&mut self, x: f32, y: f32) {
-        let x0 = x * 2. / SCREEN_WIDTH;
-        let y0 = y * 2. / SCREEN_HEIGHT;
-
-        self.matrix[3][0] = x0;
-        self.matrix[3][1] = y0;
+        self.rect.set_position(x, y);
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
         let uniforms = uniform! {
-            matrix: self.matrix,
+            matrix: self.rect.matrix,
             isTex: true,
             tex: &self.texture,
             clipped: self.clipped,
@@ -164,8 +106,8 @@ impl Texture {
         };
         target
             .draw(
-                &self.vertex_buffer,
-                &self.index_buffer,
+                &self.rect.vertex_buffer,
+                &self.rect.index_buffer,
                 program,
                 &uniforms,
                 &glium::DrawParameters {

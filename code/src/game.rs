@@ -2,7 +2,8 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::texture::{Texture, SCREEN_HEIGHT};
+use crate::shape::{GradientDirection, Rectangle, SCREEN_HEIGHT};
+use crate::texture::Texture;
 
 pub struct Player {
     pub texture: Texture,
@@ -45,14 +46,25 @@ impl Player {
 
 pub struct StartScreen {
     tex: Texture,
+    rect: Rectangle,
     pub started: bool,
 }
 
 impl StartScreen {
     pub fn new(display: &Display) -> Self {
         let tex = Texture::new("./res/techno.png", display);
+        let mut rect = Rectangle::new(display, 300, 300);
+        rect.set_color(display, [0.8, 0.5, 0.3, 1.0]);
+        rect.set_gradient(
+            display,
+            [0.0, 0.0, 1.0, 1.0],
+            [0.0, 1.0, 0.0, 1.0],
+            GradientDirection::Horizontal,
+        );
+        rect.set_position(100., 100.);
         StartScreen {
             tex: tex,
+            rect: rect,
             started: false,
         }
     }
@@ -64,6 +76,7 @@ impl StartScreen {
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.rect.draw(target, program);
         self.tex.draw(target, program);
     }
 }

@@ -5,8 +5,9 @@ extern crate glium;
 extern crate image;
 
 mod game;
-mod texture;
 mod input_mgr;
+mod shape;
+mod texture;
 
 fn main() {
     println!("Hello, world!");
@@ -16,7 +17,8 @@ fn main() {
     let event_loop = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()
         .with_inner_size(PhysicalSize::new(768, 576))
-        .with_title(format!("hi"));
+        .with_title(format!("hi"))
+        .with_resizable(false);
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
@@ -29,7 +31,7 @@ fn main() {
             .unwrap();
 
     //let mut game = game::Game::new(&display);
-    let mut screen_mgr=ScreenMgr::new(&display);
+    let mut screen_mgr = ScreenMgr::new(&display);
 
     event_loop.run(move |ev, _, control_flow| {
         let next_frame_time =
@@ -43,8 +45,13 @@ fn main() {
                     input,
                     is_synthetic: _,
                 } => {
-                    screen_mgr.input.update(input.state, input.virtual_keycode.unwrap_or(glutin::event::VirtualKeyCode::Tab));
-                },
+                    screen_mgr.input.update(
+                        input.state,
+                        input
+                            .virtual_keycode
+                            .unwrap_or(glutin::event::VirtualKeyCode::Tab),
+                    );
+                }
                 glutin::event::WindowEvent::CloseRequested => {
                     *control_flow = glutin::event_loop::ControlFlow::Exit;
                     return;
