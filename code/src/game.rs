@@ -53,6 +53,7 @@ pub struct StartScreen {
     menu: Texture,
     pub started: bool,
     pub menu_choice: i8,
+
 }
 
 impl StartScreen {
@@ -96,6 +97,8 @@ impl StartScreen {
     }
 
     pub fn update(&mut self, input: &mut InputManager) {
+        self.background_cloud.translate(-0.02, 0.);
+        
         if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 3 {
             self.menu_choice += 1;
             let (x, y) = self.cursor.get_position();
