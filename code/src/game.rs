@@ -2,7 +2,7 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::shape::{GradientDirection, Rectangle, SCREEN_HEIGHT};
+use crate::shape::{GradientDirection, Rectangle, SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::texture::Texture;
 
 pub struct Player {
@@ -45,40 +45,76 @@ impl Player {
 }
 
 pub struct StartScreen {
-    tex: Texture,
+    background_cloud: Texture,
+    tex2: Texture,
+    logo: Texture,
     rect: Rectangle,
+    cursor: Texture,
+    menu: Texture,
     pub started: bool,
+    pub menu_choice: i8,
 }
 
 impl StartScreen {
     pub fn new(display: &Display) -> Self {
-        let mut tex = Texture::new("./res/techno.png", display);
-        tex.clip(32.0, 0.0, 64.0, 64.0);
-        let mut rect = Rectangle::new(display, 300, 300);
+        let mut big_cloud = Texture::new("./res/big_cloud.png", display);
+        big_cloud.set_position(0., -SCREEN_HEIGHT / 2. + big_cloud.height / 2.);
+
+        let mut tex2 = Texture::new("./res/grass_tileset.png", display);
+        tex2.set_position(-200., -150.);
+
+        let mut logo = Texture::new("./res/logo.png", display);
+        logo.scale(1.2);
+        logo.set_position(SCREEN_WIDTH / 3. - logo.width / 2. + 50., 70.);
+
+        let mut menu = Texture::new("./res/menu.png", display);
+        menu.scale(1.1);
+        menu.set_position(SCREEN_WIDTH / 3. - menu.width / 2., -90.);
+
+        let mut cursor = Texture::new("./res/cursor.png", display);
+        cursor.scale(1.1);
+        cursor.set_position(SCREEN_WIDTH / 3. - cursor.width / 2. + 15., -35.);
+
+        let mut rect = Rectangle::new(display, SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32);
         rect.set_color(display, [0.8, 0.5, 0.3, 1.0]);
-        rect.set_gradient( 
+        rect.set_gradient(
             display,
-            [0.0, 0.0, 1.0, 1.0],
-            [0.0, 1.0, 0.0, 1.0],
-            GradientDirection::Horizontal,
+            [1.0, 0.45, 1.0, 0.8],
+            [0.3, 0.3, 1.0, 0.8],
+            GradientDirection::Vertical,
         );
-        rect.set_position(100., 100.);
         StartScreen {
-            tex: tex,
+            background_cloud: big_cloud,
+            tex2: tex2,
+            logo: logo,
             rect: rect,
             started: false,
+            cursor: cursor,
+            menu: menu,
+            menu_choice: 0,
         }
     }
 
     pub fn update(&mut self, input: &mut InputManager) {
-        if input.key_went_up(VirtualKeyCode::Return) {
-            self.started = true;
+        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 3 {
+            self.menu_choice += 1;
+            let (x, y) = self.cursor.get_position();
+            self.cursor.set_position(x, y - 35.);
+        }
+        if input.key_went_up(VirtualKeyCode::Up) && self.menu_choice > 0 {
+            self.menu_choice -= 1;
+            let (x, y) = self.cursor.get_position();
+            self.cursor.set_position(x, y + 35.);
         }
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.rect.draw(target, program);
-        self.tex.draw(target, program);
+        self.background_cloud.draw(target, program);
+        self.tex2.draw(target, program);
+        self.logo.draw(target, program);
+        self.menu.draw(target, program);
+        self.cursor.draw(target, program);
     }
 }
 

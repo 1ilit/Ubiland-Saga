@@ -1,7 +1,7 @@
 use glium::{implement_vertex, uniform, Display, Surface};
 
-pub const SCREEN_HEIGHT: f32 = 576.0;
-pub const SCREEN_WIDTH: f32 = 768.0;
+pub const SCREEN_HEIGHT: f32 = 576.0; // 12
+pub const SCREEN_WIDTH: f32 = 768.0; // 16
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
@@ -127,6 +127,10 @@ impl Rectangle {
 
         self.matrix[3][0] = x0;
         self.matrix[3][1] = y0;
+    }
+
+    pub fn get_position(&mut self)->(f32, f32){
+        (self.matrix[3][0]*SCREEN_WIDTH/2., self.matrix[3][1]*SCREEN_HEIGHT/2.)
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {

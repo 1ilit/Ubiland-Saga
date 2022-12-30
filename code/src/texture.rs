@@ -69,6 +69,10 @@ impl Texture {
         self.rect.translate(x, y);
     }
 
+    pub fn get_position(&mut self)->(f32, f32){
+        self.rect.get_position()
+    }
+
     pub fn set_position(&mut self, x: f32, y: f32) {
         self.rect.set_position(x, y);
     }

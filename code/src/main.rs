@@ -64,7 +64,7 @@ fn main() {
         screen_mgr.update();
 
         let mut target = display.draw();
-        target.clear_color(0.2, 0.2, 0.2, 1.0);
+        target.clear_color(1.0, 1.0, 1.0, 1.0);
 
         //draw game
         screen_mgr.draw(&mut target, &program);
