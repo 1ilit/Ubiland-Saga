@@ -1,7 +1,7 @@
 use glium::{implement_vertex, uniform, Display, Surface};
 
 pub const SCREEN_HEIGHT: f32 = 576.0; // 12
-pub const SCREEN_WIDTH: f32 = 720.0; // 15
+pub const SCREEN_WIDTH: f32 = 768.0; // 16
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
