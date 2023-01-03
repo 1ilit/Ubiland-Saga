@@ -37,7 +37,7 @@ fn main() {
         glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
             .unwrap();
 
-    let frame_rate: f32 = 60.0;
+    // let frame_rate: f32 = 60.0;
 
     //let mut game = game::Game::new(&display);
     let mut screen_mgr = ScreenMgr::new(&display);
@@ -45,15 +45,16 @@ fn main() {
     let previous_frame_time = Instant::now();
 
     event_loop.run(move |ev, _, control_flow| {
-        // let next_frame_time =
-        //     std::time::Instant::now() + std::time::Duration::from_nanos(16_666_667);
-        // *control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
-
+        
         let current_time = Instant::now();
         let elapsed_time = current_time.duration_since(previous_frame_time);
         let delta_time = elapsed_time.as_secs_f32();
+        
+        let next_frame_time =
+            std::time::Instant::now() + std::time::Duration::from_nanos(delta_time as u64);
+        *control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
 
-        if delta_time > 1.0 / frame_rate {
+        //if delta_time > 1.0 / frame_rate {
             match ev {
                 glutin::event::Event::WindowEvent { event, .. } => match event {
                     glutin::event::WindowEvent::KeyboardInput {
@@ -84,7 +85,7 @@ fn main() {
             //draw game
             screen_mgr.draw(&mut target, &program);
             target.finish().unwrap();
-        }
+       // }
 
     });
 }

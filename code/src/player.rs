@@ -26,13 +26,13 @@ impl Player {
         self.position[1] += self.velocity[1];
 
         if self.position[1] + self.velocity[1] - self.texture.height / 2.0 > -(SCREEN_HEIGHT / 2.) {
-            self.velocity[1] -= 0.4;
+            self.velocity[1] -= 0.002;
         } else {
             self.velocity[1] = 0.0;
         }
 
         if input.key_down(VirtualKeyCode::Up) {
-            self.velocity[1] = 7.;
+            self.velocity[1] = 0.5;
         }
 
         self.texture

@@ -1,3 +1,4 @@
+use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::game::Game;
@@ -39,7 +40,7 @@ impl ScreenMgr {
         match self.current_screen {
             CurrentScreen::Start => {
                 self.start.update(&mut self.input);
-                if self.start.started {
+                if self.start.menu_choice==0 && self.input.key_went_up(VirtualKeyCode::Return) {
                     self.current_screen = CurrentScreen::Play;
                 }
             }

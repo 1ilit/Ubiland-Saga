@@ -44,13 +44,11 @@ impl StartScreen {
     pub fn update(&mut self, input: &mut InputManager) {
         if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 3 {
             self.menu_choice += 1;
-            let (x, y) = self.cursor.get_position();
-            self.cursor.set_position(x, y - 35.);
+            self.cursor.translate(0., -35.);
         }
         if input.key_went_up(VirtualKeyCode::Up) && self.menu_choice > 0 {
             self.menu_choice -= 1;
-            let (x, y) = self.cursor.get_position();
-            self.cursor.set_position(x, y + 35.);
+            self.cursor.translate(0., 35.);
         }
     }
 

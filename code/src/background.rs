@@ -12,7 +12,7 @@ pub struct Background {
 }
 
 impl Background {
-    pub fn new(display: &Display)->Self{
+    pub fn new(display: &Display) -> Self {
         let mut big_cloud1 = Texture::new("./res/big_cloud.png", display);
         big_cloud1.set_position(0., -SCREEN_HEIGHT / 2. + big_cloud1.height / 2.);
 
@@ -39,14 +39,14 @@ impl Background {
             GradientDirection::Vertical,
         );
 
-        Background{
+        Background {
             background_clouds: clouds,
             rect: rect,
             rand: rand::thread_rng(),
         }
     }
 
-    pub fn update(&mut self){
+    pub fn update(&mut self) {
         let (cloud_x, _cloud_y) = self.background_clouds[0].get_position();
         let (cloud_x1, _cloud_y) = self.background_clouds[1].get_position();
 
@@ -72,11 +72,11 @@ impl Background {
         }
 
         for i in 0..3 {
-            self.background_clouds[i].translate(-0.02, 0.0);
+            self.background_clouds[i].translate(-0.015, 0.0);
         }
     }
 
-    pub fn draw(&mut self, target: &mut Frame, program: &Program){
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.rect.draw(target, program);
 
         for i in 0..3 {
