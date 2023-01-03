@@ -2,7 +2,6 @@
 
 use std::time::Instant;
 
-use crate::game::ScreenMgr;
 extern crate glium;
 extern crate image;
 
@@ -10,6 +9,11 @@ mod game;
 mod input_mgr;
 mod shape;
 mod texture;
+mod player;
+mod start_screen;
+mod screen_mgr;
+
+use crate::screen_mgr::ScreenMgr;
 
 fn main() {
     println!("Hello, world!");
