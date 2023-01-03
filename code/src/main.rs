@@ -12,6 +12,7 @@ mod texture;
 mod player;
 mod start_screen;
 mod screen_mgr;
+mod background;
 
 use crate::screen_mgr::ScreenMgr;
 
