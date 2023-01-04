@@ -2,18 +2,18 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::shape::{SCREEN_HEIGHT};
-use crate::texture::Texture;
+use crate::shape::SCREEN_HEIGHT;
+use crate::texture::{Transform, AnimatedTexture};
 
 pub struct Player {
-    pub texture: Texture,
+    pub texture: AnimatedTexture,
     pub position: [f32; 2],
     pub velocity: [f32; 2],
 }
 
 impl Player {
     pub fn new(display: &Display) -> Self {
-        let texture = Texture::new("./res/star.png", display);
+        let texture = AnimatedTexture::new(display, "./res/ubi_fly.png",0.0, 0.0, 72.0, 82.0, 1.0, 3);
         Player {
             texture: texture,
             position: [0.0, 0.0],
@@ -21,7 +21,8 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, input: &mut InputManager) {
+    pub fn update(&mut self, input: &mut InputManager, dt: f32) {
+        self.texture.update(dt);
         self.position[0] += self.velocity[0];
         self.position[1] += self.velocity[1];
 
@@ -32,7 +33,7 @@ impl Player {
         }
 
         if input.key_down(VirtualKeyCode::Up) {
-            self.velocity[1] = 0.5;
+            self.velocity[1] = 0.7;
         }
 
         self.texture

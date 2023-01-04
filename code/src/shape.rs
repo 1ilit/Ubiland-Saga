@@ -12,7 +12,8 @@ pub struct Vertex {
 
 implement_vertex!(Vertex, position, color, tex_coords);
 
-pub enum GradientDirection {
+#[derive(Debug, PartialEq)]
+pub enum Direction {
     Horizontal,
     Vertical,
 }
@@ -85,16 +86,16 @@ impl Rectangle {
         display: &Display,
         c1: [f32; 4],
         c2: [f32; 4],
-        dir: GradientDirection,
+        dir: Direction,
     ) {
         match dir {
-            GradientDirection::Horizontal => {
+            Direction::Horizontal => {
                 self.vertex_array[0].color = c1;
                 self.vertex_array[1].color = c1;
                 self.vertex_array[2].color = c2;
                 self.vertex_array[3].color = c2;
             }
-            GradientDirection::Vertical => {
+            Direction::Vertical => {
                 self.vertex_array[0].color = c1;
                 self.vertex_array[2].color = c1;
                 self.vertex_array[1].color = c2;

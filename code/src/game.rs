@@ -13,8 +13,8 @@ impl Game {
         Game { player: p }
     }
 
-    pub fn update(&mut self, input: &mut InputManager) {
-        self.player.update(input);
+    pub fn update(&mut self, input: &mut InputManager, dt: f32) {
+        self.player.update(input, dt);
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {

@@ -5,14 +5,14 @@ use std::time::Instant;
 extern crate glium;
 extern crate image;
 
+mod background;
 mod game;
 mod input_mgr;
-mod shape;
-mod texture;
 mod player;
-mod start_screen;
 mod screen_mgr;
-mod background;
+mod shape;
+mod start_screen;
+mod texture;
 
 use crate::screen_mgr::ScreenMgr;
 
@@ -42,50 +42,47 @@ fn main() {
     //let mut game = game::Game::new(&display);
     let mut screen_mgr = ScreenMgr::new(&display);
 
-    let previous_frame_time = Instant::now();
+    let mut previous_frame_time = Instant::now();
 
     event_loop.run(move |ev, _, control_flow| {
-        
         let current_time = Instant::now();
         let elapsed_time = current_time.duration_since(previous_frame_time);
         let delta_time = elapsed_time.as_secs_f32();
-        
+        previous_frame_time = current_time;
+
         let next_frame_time =
             std::time::Instant::now() + std::time::Duration::from_nanos(delta_time as u64);
         *control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
 
-        //if delta_time > 1.0 / frame_rate {
-            match ev {
-                glutin::event::Event::WindowEvent { event, .. } => match event {
-                    glutin::event::WindowEvent::KeyboardInput {
-                        device_id: _,
-                        input,
-                        is_synthetic: _,
-                    } => {
-                        screen_mgr.input.update(
-                            input.state,
-                            input
-                                .virtual_keycode
-                                .unwrap_or(glutin::event::VirtualKeyCode::Tab),
-                        );
-                    }
-                    glutin::event::WindowEvent::CloseRequested => {
-                        *control_flow = glutin::event_loop::ControlFlow::Exit;
-                        return;
-                    }
-                    _ => return,
-                },
-                _ => (),
-            }
-            //update game
-            screen_mgr.update();
+        match ev {
+            glutin::event::Event::WindowEvent { event, .. } => match event {
+                glutin::event::WindowEvent::KeyboardInput {
+                    device_id: _,
+                    input,
+                    is_synthetic: _,
+                } => {
+                    screen_mgr.input.update(
+                        input.state,
+                        input
+                            .virtual_keycode
+                            .unwrap_or(glutin::event::VirtualKeyCode::Tab),
+                    );
+                }
+                glutin::event::WindowEvent::CloseRequested => {
+                    *control_flow = glutin::event_loop::ControlFlow::Exit;
+                    return;
+                }
+                _ => return,
+            },
+            _ => (),
+        }
+        //update game
+        screen_mgr.update(delta_time);
 
-            let mut target = display.draw();
-            target.clear_color(1.0, 1.0, 1.0, 1.0);
-            //draw game
-            screen_mgr.draw(&mut target, &program);
-            target.finish().unwrap();
-       // }
-
+        let mut target = display.draw();
+        target.clear_color(1.0, 1.0, 1.0, 1.0);
+        //draw game
+        screen_mgr.draw(&mut target, &program);
+        target.finish().unwrap();
     });
 }

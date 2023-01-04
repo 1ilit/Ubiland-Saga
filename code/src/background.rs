@@ -2,8 +2,8 @@ use glium::{Display, Frame, Program};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
-use crate::shape::{GradientDirection, Rectangle, SCREEN_HEIGHT, SCREEN_WIDTH};
-use crate::texture::Texture;
+use crate::shape::{Direction, Rectangle, SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::texture::{Texture, Transform};
 
 pub struct Background {
     background_clouds: [Texture; 3],
@@ -36,7 +36,7 @@ impl Background {
             display,
             [1.0, 0.45, 1.0, 0.8],
             [0.3, 0.3, 1.0, 0.8],
-            GradientDirection::Vertical,
+            Direction::Vertical,
         );
 
         Background {
