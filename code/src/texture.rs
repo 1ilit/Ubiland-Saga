@@ -204,6 +204,10 @@ impl AnimatedTexture {
             self.run_animation(dt);
         }
     }
+
+    pub fn get_dimensions(&self) -> (f32, f32) {
+        (self.width, self.height)
+    }
 }
 
 impl Transform for AnimatedTexture {
