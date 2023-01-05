@@ -1,9 +1,9 @@
 use std::fs::read;
 use std::io::Cursor;
 
-use glium::{texture::SrgbTexture2d, uniform, Display, Surface};
+use glium::{uniform, Display, Surface};
 
-use crate::shape::{Direction, Rectangle};
+use crate::shape::Rectangle;
 
 struct Rect {
     start: [f32; 2],
@@ -161,12 +161,7 @@ pub struct AnimatedTexture {
 }
 
 impl AnimatedTexture {
-    pub fn new(
-        display: &Display,
-        paths: Vec<&str>,
-        speed: f32,
-        frames: usize,
-    ) -> Self {
+    pub fn new(display: &Display, paths: Vec<&str>, speed: f32, frames: usize) -> Self {
         let mut vec: Vec<Texture> = vec![];
 
         for i in 0..frames {
