@@ -2,7 +2,7 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::shape::SCREEN_HEIGHT;
+use crate::shape::{SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::texture::{AnimatedTexture, Transform};
 
 pub struct Player {
@@ -12,6 +12,7 @@ pub struct Player {
     pub width: f32,
     pub height: f32,
     pub velocity: [f32; 2],
+    pub on_platform: bool,
 }
 
 impl Player {
@@ -30,11 +31,12 @@ impl Player {
         let (width, height) = texture.get_dimensions();
         Player {
             texture: texture,
-            x: 0.0,
-            y: 0.0,
+            x: -SCREEN_WIDTH/2.0+48.0,
+            y: 120.0,
             width: width,
             height: height,
             velocity: [0.0, 0.0],
+            on_platform: false,
         }
     }
 
@@ -53,9 +55,9 @@ impl Player {
             self.velocity[1] = 380.0 * dt;
         }
         
-        if input.key_down(VirtualKeyCode::Right) {
+        if input.key_down(VirtualKeyCode::Right) && self.on_platform{
             self.velocity[0] = 200.0 * dt;
-        } else if input.key_down(VirtualKeyCode::Left) {
+        } else if input.key_down(VirtualKeyCode::Left) && self.on_platform{
             self.velocity[0] = -200.0 * dt;
         } else {
             self.velocity[0] = 0.0 * dt;

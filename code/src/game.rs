@@ -1,11 +1,17 @@
-use glium::{Display, Frame, Program, glutin::event::VirtualKeyCode};
+use glium::{Display, Frame, Program};
 
-use crate::{input_mgr::InputManager, player::Player, texture::{Texture, Transform}, shape::SCREEN_HEIGHT};
+use crate::{
+    input_mgr::InputManager,
+    player::Player,
+    shape::{SCREEN_HEIGHT, SCREEN_WIDTH},
+    texture::{Texture, Transform},
+};
 
 pub enum Size {
     Small,
     Medium,
     Large,
+    XLarge,
 }
 
 pub struct Platform {
@@ -33,6 +39,10 @@ impl Platform {
                 texture = Texture::new("./res/platform_5.png", display);
                 width = 240.0;
             }
+            Size::XLarge => {
+                texture = Texture::new("./res/platform_7.png", display);
+                width = 336.0;
+            }
         }
 
         Self {
@@ -44,6 +54,12 @@ impl Platform {
         }
     }
 
+    pub fn translate(&mut self, x: f32, y: f32) {
+        self.texture.translate(x, y);
+        self.x += x;
+        self.y += y;
+    }
+
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.texture.draw(target, program);
     }
@@ -51,30 +67,55 @@ impl Platform {
 
 pub struct Game {
     player: Player,
-    platform: Platform,
+    platforms: Vec<Platform>,
 }
 
 impl Game {
     pub fn new(display: &Display) -> Self {
         let p = Player::new(display);
-        let pl= Platform::new(display, Size::Large);
+        let pl = Platform::new(display, Size::Large);
+        let mut pl2 = Platform::new(display, Size::XLarge);
+        pl2.translate(-SCREEN_WIDTH / 2.0 + 96.0, -30.0);
 
-        Game { player: p , platform: pl,}
+        Game {
+            player: p,
+            platforms: vec![pl, pl2],
+        }
     }
 
     pub fn update(&mut self, input: &mut InputManager, dt: f32) {
         self.player.update(input, dt);
 
-        if self.player.x+self.player.width/2.>=self.platform.x-self.platform.width/2. &&
-           self.player.x-self.player.width/2.<=self.platform.x+self.platform.width/2. &&
-           self.player.y-self.player.height/2.+self.player.velocity[1]<=self.platform.y+self.platform.height/2. &&
-           self.player.y-self.player.height/2.>=self.platform.y+self.platform.height/2.0 {
-            self.player.velocity[1] = 0.0;
+        for i in 0..2 {
+            if self.player.x + self.player.width / 2.
+                >= self.platforms[i].x - self.platforms[i].width / 2.
+                && self.player.x - self.player.width / 2.
+                    <= self.platforms[i].x + self.platforms[i].width / 2.
+                && self.player.y - self.player.height / 2. + self.player.velocity[1]
+                    <= self.platforms[i].y + self.platforms[i].height / 2.
+                && self.player.y - self.player.height / 2.
+                    >= self.platforms[i].y + self.platforms[i].height / 2.0
+            {
+                self.player.velocity[1] = 0.0;
+                self.player.on_platform = true;
+                break;
+            } else {
+                self.player.on_platform = false;
+            }
+        }
+
+        if !self.player.on_platform {
+            for i in 0..2 {
+                self.platforms[i].translate(-0.01, 0.0);
+            }
         }
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        self.platform.draw(target, program);
+        for i in 0..2 {
+            self.platforms[i].draw(target, program);
+        }
+
         self.player.draw(target, program);
     }
 }
