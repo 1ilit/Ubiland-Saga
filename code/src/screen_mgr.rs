@@ -36,7 +36,7 @@ impl ScreenMgr {
     }
 
     pub fn update(&mut self, dt: f32) {
-        self.background.update();
+        self.background.update(dt);
         match self.current_screen {
             CurrentScreen::Start => {
                 self.start.update(&mut self.input);

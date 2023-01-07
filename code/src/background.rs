@@ -2,11 +2,12 @@ use glium::{Display, Frame, Program};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
-use crate::shape::{Direction, Rectangle, SCREEN_HEIGHT, SCREEN_WIDTH};
-use crate::texture::{Texture, Transform};
+use crate::shape::{Direction, Rectangle, BOTTOM, LEFT, RIGHT, SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::texture::{AnimatedTexture, Texture, Transform};
 
 pub struct Background {
     background_clouds: [Texture; 3],
+    birds: [AnimatedTexture; 5],
     rect: Rectangle,
     rand: ThreadRng,
 }
@@ -14,19 +15,13 @@ pub struct Background {
 impl Background {
     pub fn new(display: &Display) -> Self {
         let mut big_cloud1 = Texture::new("./res/big_cloud.png", display);
-        big_cloud1.set_position(0., -SCREEN_HEIGHT / 2. + big_cloud1.height / 2.);
+        big_cloud1.set_position(0., BOTTOM + big_cloud1.height / 2.);
 
         let mut big_cloud2 = Texture::new("./res/big_cloud.png", display);
-        big_cloud2.set_position(
-            SCREEN_WIDTH - 3.,
-            -SCREEN_HEIGHT / 2. + big_cloud2.height / 2.,
-        );
+        big_cloud2.set_position(SCREEN_WIDTH - 3., BOTTOM + big_cloud2.height / 2.);
 
         let mut big_cloud3 = Texture::new("./res/rainbow.png", display);
-        big_cloud3.set_position(
-            SCREEN_WIDTH - 3.,
-            -SCREEN_HEIGHT / 2. + big_cloud3.height / 2.,
-        );
+        big_cloud3.set_position(SCREEN_WIDTH - 3., BOTTOM + big_cloud3.height / 2.);
 
         let clouds = [big_cloud1, big_cloud2, big_cloud3];
 
@@ -39,40 +34,61 @@ impl Background {
             Direction::Vertical,
         );
 
+        let mut array = [
+            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
+        ];
+
+        array[0].set_position(0.0, 0.0);
+        array[1].set_position(100.0, -250.0);
+        array[2].set_position(-300.0, -100.0);
+        array[3].set_position(200.0, 170.0);
+        array[4].set_position(-150.0, 100.0);
+
         Background {
             background_clouds: clouds,
+            birds: array,
             rect: rect,
             rand: rand::thread_rng(),
         }
     }
 
-    pub fn update(&mut self) {
-        let (cloud_x, _cloud_y) = self.background_clouds[0].get_position();
-        let (cloud_x1, _cloud_y) = self.background_clouds[1].get_position();
-
-        if cloud_x + self.background_clouds[0].width / 2. < (-SCREEN_WIDTH / 2.) {
+    pub fn update(&mut self, dt: f32) {
+        if self.background_clouds[0].x + self.background_clouds[0].width / 2. < LEFT {
             self.background_clouds[0].set_position(
                 SCREEN_WIDTH - 3.,
-                -SCREEN_HEIGHT / 2. + self.background_clouds[0].height / 2.,
+                BOTTOM + self.background_clouds[0].height / 2.,
             );
         }
-        if cloud_x1 + self.background_clouds[1].width / 2. < (-SCREEN_WIDTH / 2.) {
+        if self.background_clouds[1].x + self.background_clouds[1].width / 2. < LEFT {
             let x: u8 = self.rand.gen_range(0..4);
             if x == 3 {
                 self.background_clouds[2].set_position(
                     SCREEN_WIDTH - 3.,
-                    -SCREEN_HEIGHT / 2. + self.background_clouds[0].height / 2.,
+                    BOTTOM + self.background_clouds[0].height / 2.,
                 );
             } else {
                 self.background_clouds[1].set_position(
                     SCREEN_WIDTH - 3.,
-                    -SCREEN_HEIGHT / 2. + self.background_clouds[0].height / 2.,
+                    BOTTOM + self.background_clouds[0].height / 2.,
                 );
             }
         }
 
         for i in 0..3 {
             self.background_clouds[i].translate(-0.015, 0.0);
+        }
+
+        for i in 0..5 {
+            self.birds[i].update(dt);
+            self.birds[i].translate(0.012, 0.0);
+
+            if self.birds[i].x >= RIGHT + 10. {
+                self.birds[i].set_position(LEFT - 10., self.birds[i].y)
+            }
         }
     }
 
@@ -81,6 +97,10 @@ impl Background {
 
         for i in 0..3 {
             self.background_clouds[i].draw(target, program);
+        }
+
+        for i in 0..5 {
+            self.birds[i].draw(target, program);
         }
     }
 }

@@ -129,10 +129,7 @@ impl Rectangle {
     }
 
     pub fn get_position(&mut self) -> (f32, f32) {
-        (
-            self.matrix[3][0] * SCREEN_WIDTH / 2.,
-            self.matrix[3][1] * SCREEN_HEIGHT / 2.,
-        )
+        (self.matrix[3][0] * RIGHT, self.matrix[3][1] * TOP)
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {

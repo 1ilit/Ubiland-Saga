@@ -1,3 +1,4 @@
 [] make input mgr a sigleton
 [] better names for structs and enums
 [] use a single rect for all frames in AnimatedTexture
+[] sine wave for birds

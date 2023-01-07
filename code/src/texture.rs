@@ -3,7 +3,7 @@ use std::io::Cursor;
 
 use glium::{uniform, Display, Surface};
 
-use crate::shape::Rectangle;
+use crate::shape::{Rectangle, RIGHT, TOP};
 
 struct Rect {
     start: [f32; 2],
@@ -21,6 +21,8 @@ pub trait Transform {
 pub struct Texture {
     pub width: f32,
     pub height: f32,
+    pub x: f32,
+    pub y: f32,
 
     texture: glium::texture::SrgbTexture2d,
     clipped: bool,
@@ -48,6 +50,8 @@ impl Texture {
         Self {
             width: image_dimensions.0 as f32,
             height: image_dimensions.1 as f32,
+            x: rect.matrix[3][0] * RIGHT,
+            y: rect.matrix[3][1] * TOP,
             texture: texture,
             clipped: false,
             clip_rect: Rect {
@@ -105,6 +109,8 @@ impl Transform for Texture {
 
     fn translate(&mut self, x: f32, y: f32) {
         self.rect.translate(x, y);
+        self.x = self.rect.matrix[3][0] * RIGHT;
+        self.y = self.rect.matrix[3][1] * TOP;
     }
 
     fn get_position(&mut self) -> (f32, f32) {
@@ -113,6 +119,8 @@ impl Transform for Texture {
 
     fn set_position(&mut self, x: f32, y: f32) {
         self.rect.set_position(x, y);
+        self.x = self.rect.matrix[3][0] * RIGHT;
+        self.y = self.rect.matrix[3][1] * TOP;
     }
 
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
@@ -149,6 +157,8 @@ pub enum AnimationMode {
 pub struct AnimatedTexture {
     pub width: f32,
     pub height: f32,
+    pub x: f32,
+    pub y: f32,
 
     textures: Vec<Texture>,
     speed: f32,
@@ -171,6 +181,8 @@ impl AnimatedTexture {
         Self {
             width: vec[0].width,
             height: vec[0].height,
+            x: vec[0].x,
+            y: vec[0].y,
             textures: vec,
             speed: speed,
             animation_timer: 0.0,
@@ -221,8 +233,11 @@ impl Transform for AnimatedTexture {
 
     fn translate(&mut self, x: f32, y: f32) {
         for i in 0..self.frame_count {
-            self.textures[i].rect.translate(x, y);
+            self.textures[i].translate(x, y);
         }
+
+        self.x = self.textures[0].x;
+        self.y = self.textures[0].y;
     }
 
     fn get_position(&mut self) -> (f32, f32) {
@@ -233,6 +248,9 @@ impl Transform for AnimatedTexture {
         for i in 0..self.frame_count {
             self.textures[i].rect.set_position(x, y);
         }
+
+        self.x = self.textures[0].x;
+        self.y = self.textures[0].y;
     }
 
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
