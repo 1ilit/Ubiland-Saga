@@ -3,7 +3,7 @@ use glium::{Display, Frame, Program};
 use crate::{
     input_mgr::InputManager,
     player::Player,
-    shape::{SCREEN_HEIGHT, SCREEN_WIDTH},
+    shape::{SCREEN_HEIGHT, SCREEN_WIDTH, LEFT},
     texture::{Texture, Transform},
 };
 
@@ -73,9 +73,10 @@ pub struct Game {
 impl Game {
     pub fn new(display: &Display) -> Self {
         let p = Player::new(display);
-        let pl = Platform::new(display, Size::Large);
+        let mut pl = Platform::new(display, Size::Large);
+        pl.translate(100.0, -100.0);
         let mut pl2 = Platform::new(display, Size::XLarge);
-        pl2.translate(-SCREEN_WIDTH / 2.0 + 96.0, -30.0);
+        pl2.translate(LEFT + 96.0, -30.0);
 
         Game {
             player: p,
@@ -97,6 +98,11 @@ impl Game {
                     >= self.platforms[i].y + self.platforms[i].height / 2.0
             {
                 self.player.velocity[1] = 0.0;
+            }
+
+            if self.player.x >= self.platforms[i].x - self.platforms[i].width / 2.
+                && self.player.x <= self.platforms[i].x + self.platforms[i].width / 2.
+            {
                 self.player.on_platform = true;
                 break;
             } else {
@@ -104,9 +110,9 @@ impl Game {
             }
         }
 
-        if !self.player.on_platform {
+        if self.player.right {
             for i in 0..2 {
-                self.platforms[i].translate(-0.01, 0.0);
+                self.platforms[i].translate(-60.0 * dt, 0.0);
             }
         }
     }

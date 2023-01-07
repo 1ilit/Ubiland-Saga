@@ -2,7 +2,7 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::shape::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::shape::{BOTTOM, LEFT};
 use crate::texture::{AnimatedTexture, Transform};
 
 pub struct Player {
@@ -13,6 +13,7 @@ pub struct Player {
     pub height: f32,
     pub velocity: [f32; 2],
     pub on_platform: bool,
+    pub right: bool,
 }
 
 impl Player {
@@ -31,12 +32,13 @@ impl Player {
         let (width, height) = texture.get_dimensions();
         Player {
             texture: texture,
-            x: -SCREEN_WIDTH/2.0+48.0,
+            x: BOTTOM + 48.0,
             y: 120.0,
             width: width,
             height: height,
             velocity: [0.0, 0.0],
             on_platform: false,
+            right: false,
         }
     }
 
@@ -44,23 +46,30 @@ impl Player {
         self.texture.update(dt);
         self.x += self.velocity[0];
         self.y += self.velocity[1];
-        
-        if self.y + self.velocity[1] - self.texture.height / 2.0 > -(SCREEN_HEIGHT / 2.) {
+
+        if self.y + self.velocity[1] - self.texture.height / 2.0 > BOTTOM {
             self.velocity[1] -= 3.0 * dt;
         } else {
             self.velocity[1] = 0.0;
         }
-        
+
         if input.key_down(VirtualKeyCode::Up) {
             self.velocity[1] = 380.0 * dt;
         }
-        
-        if input.key_down(VirtualKeyCode::Right) && self.on_platform{
-            self.velocity[0] = 200.0 * dt;
-        } else if input.key_down(VirtualKeyCode::Left) && self.on_platform{
-            self.velocity[0] = -200.0 * dt;
+        if input.key_down(VirtualKeyCode::Right) {
+            self.x += 200.0 * dt;
+            self.right = true;
         } else {
-            self.velocity[0] = 0.0 * dt;
+            self.right = false;
+        }
+        if input.key_down(VirtualKeyCode::Left) && self.on_platform{
+            self.x -= 200.0 * dt;
+        }
+
+        if self.x >= 0.0 {
+            self.x = 0.0;
+        } else if self.x <= LEFT + self.width / 2. {
+            self.x = LEFT + self.width / 2.;
         }
 
         self.texture.set_position(self.x, self.y);

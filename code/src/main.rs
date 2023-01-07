@@ -1,7 +1,3 @@
-// #[macro_use]
-
-use std::time::Instant;
-
 extern crate glium;
 extern crate image;
 
@@ -14,6 +10,7 @@ mod shape;
 mod start_screen;
 mod texture;
 
+use std::time::Instant;
 use crate::screen_mgr::ScreenMgr;
 
 fn main() {
@@ -24,7 +21,7 @@ fn main() {
     let event_loop = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()
         .with_inner_size(PhysicalSize::new(768, 576))
-        .with_title(format!("hi"))
+        .with_title(format!("Ubiland Saga"))
         .with_resizable(false);
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
@@ -37,9 +34,6 @@ fn main() {
         glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None)
             .unwrap();
 
-    // let frame_rate: f32 = 60.0;
-
-    //let mut game = game::Game::new(&display);
     let mut screen_mgr = ScreenMgr::new(&display);
 
     let mut previous_frame_time = Instant::now();
