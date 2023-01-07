@@ -39,7 +39,7 @@ impl ScreenMgr {
         self.background.update(dt);
         match self.current_screen {
             CurrentScreen::Start => {
-                self.start.update(&mut self.input);
+                self.start.update(&mut self.input, dt);
                 if self.start.menu_choice==0 && self.input.key_went_up(VirtualKeyCode::Return) {
                     self.current_screen = CurrentScreen::Play;
                 }

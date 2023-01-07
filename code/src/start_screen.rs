@@ -2,7 +2,7 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::shape::{SCREEN_WIDTH};
+use crate::shape::SCREEN_WIDTH;
 use crate::texture::{Texture, Transform};
 
 pub struct StartScreen {
@@ -11,6 +11,7 @@ pub struct StartScreen {
     menu: Texture,
     pub started: bool,
     pub menu_choice: i8,
+    elapsed_time: f32,
 }
 
 impl StartScreen {
@@ -33,10 +34,22 @@ impl StartScreen {
             cursor: cursor,
             menu: menu,
             menu_choice: 0,
+            elapsed_time: 0.0,
         }
     }
 
-    pub fn update(&mut self, input: &mut InputManager) {
+    pub fn update(&mut self, input: &mut InputManager, dt: f32) {
+        if self.elapsed_time > 999. {
+            self.elapsed_time = 1.0;
+        }
+
+        self.elapsed_time += dt;
+
+        let t = self.elapsed_time * 3.5;
+
+        let y = t.sin() * 0.015;
+        self.logo.translate(0.0, y);
+
         if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 3 {
             self.menu_choice += 1;
             self.cursor.translate(0., -35.);
