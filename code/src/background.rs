@@ -58,23 +58,14 @@ impl Background {
 
     pub fn update(&mut self, dt: f32) {
         if self.background_clouds[0].x + self.background_clouds[0].width / 2. < LEFT {
-            self.background_clouds[0].set_position(
-                SCREEN_WIDTH - 3.,
-                BOTTOM + self.background_clouds[0].height / 2.,
-            );
+            self.background_clouds[0].set_x(SCREEN_WIDTH - 3.);
         }
         if self.background_clouds[1].x + self.background_clouds[1].width / 2. < LEFT {
             let x: u8 = self.rand.gen_range(0..4);
             if x == 3 {
-                self.background_clouds[2].set_position(
-                    SCREEN_WIDTH - 3.,
-                    BOTTOM + self.background_clouds[0].height / 2.,
-                );
+                self.background_clouds[2].set_x(SCREEN_WIDTH - 3.);
             } else {
-                self.background_clouds[1].set_position(
-                    SCREEN_WIDTH - 3.,
-                    BOTTOM + self.background_clouds[0].height / 2.,
-                );
+                self.background_clouds[1].set_x(SCREEN_WIDTH - 3.);
             }
         }
 
@@ -87,7 +78,7 @@ impl Background {
             self.birds[i].translate(0.012, 0.0);
 
             if self.birds[i].x >= RIGHT + 10. {
-                self.birds[i].set_position(LEFT - 10., self.birds[i].y)
+                self.birds[i].set_x(LEFT - 10.);
             }
         }
     }

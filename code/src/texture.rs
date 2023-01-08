@@ -14,6 +14,8 @@ pub trait Transform {
     fn scale(&mut self, factor: f32);
     fn translate(&mut self, x: f32, y: f32);
     fn set_position(&mut self, x: f32, y: f32);
+    fn set_x(&mut self, x: f32);
+    fn set_y(&mut self, y: f32);
     fn get_position(&mut self) -> (f32, f32);
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program);
 }
@@ -62,34 +64,6 @@ impl Texture {
         }
     }
 
-    // pub fn sub_texture(&mut self, path: &str, display: &Display, x: f32, y: f32, w: f32, h: f32) -> Texture {
-    //     let image = image::load(
-    //         Cursor::new(read(path).expect("Unable to read file")),
-    //         image::ImageFormat::Png,
-    //     )
-    //     .unwrap()
-    //     .to_rgba8();
-
-    //     let image_dimensions = image.dimensions();
-    //     let image =
-    //         glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
-
-    //     let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
-
-    //     let rect = Rectangle::new(display, image_dimensions.0, image_dimensions.1);
-    //     Texture {
-    //         width: w,
-    //         height: h,
-    //         texture: texture,
-    //         clipped: true,
-    //         clip_rect: Rect {
-    //             start: [x, y],
-    //             size: [w, h],
-    //         },
-    //         rect: rect,
-    //     }
-    // }
-
     pub fn _clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
         self.clipped = true;
         self.clip_rect = Rect {
@@ -120,6 +94,16 @@ impl Transform for Texture {
     fn set_position(&mut self, x: f32, y: f32) {
         self.rect.set_position(x, y);
         self.x = self.rect.matrix[3][0] * RIGHT;
+        self.y = self.rect.matrix[3][1] * TOP;
+    }
+
+    fn set_x(&mut self, x: f32) {
+        self.rect.set_x(x);
+        self.x = self.rect.matrix[3][0] * RIGHT;
+    }
+
+    fn set_y(&mut self, y: f32) {
+        self.rect.set_y(y);
         self.y = self.rect.matrix[3][1] * TOP;
     }
 
@@ -250,6 +234,20 @@ impl Transform for AnimatedTexture {
         }
 
         self.x = self.textures[0].x;
+        self.y = self.textures[0].y;
+    }
+
+    fn set_x(&mut self, x: f32) {
+        for i in 0..self.frame_count {
+            self.textures[i].set_x(x);
+        }
+        self.x = self.textures[0].x;
+    }
+
+    fn set_y(&mut self, y: f32) {
+        for i in 0..self.frame_count {
+            self.textures[i].set_y(y);
+        }
         self.y = self.textures[0].y;
     }
 

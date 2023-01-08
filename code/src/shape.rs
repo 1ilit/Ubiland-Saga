@@ -121,10 +121,17 @@ impl Rectangle {
     }
 
     pub fn set_position(&mut self, x: f32, y: f32) {
-        let x0 = x * 2. / SCREEN_WIDTH;
-        let y0 = y * 2. / SCREEN_HEIGHT;
+        self.set_x(x);
+        self.set_y(y);
+    }
 
+    pub fn set_x(&mut self, x: f32){
+        let x0 = x * 2. / SCREEN_WIDTH;
         self.matrix[3][0] = x0;
+    }
+
+    pub fn set_y(&mut self, y: f32){
+        let y0 = y * 2. / SCREEN_HEIGHT;
         self.matrix[3][1] = y0;
     }
 
