@@ -16,7 +16,7 @@ pub struct Vertex {
 
 implement_vertex!(Vertex, position, color, tex_coords);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Direction {
     Horizontal,
     Vertical,
@@ -98,6 +98,32 @@ impl Rectangle {
                 self.vertex_array[2].color = c1;
                 self.vertex_array[1].color = c2;
                 self.vertex_array[3].color = c2;
+            }
+        }
+        self.vertex_buffer = glium::VertexBuffer::new(display, &self.vertex_array).unwrap();
+    }
+
+    pub fn flip_tex_coords(&mut self, display: &Display, dir: Direction){
+        match dir {
+            Direction::Horizontal => {
+                // 0-2, 1-3
+                let temp=self.vertex_array[0].tex_coords;
+                self.vertex_array[0].tex_coords=self.vertex_array[2].tex_coords;
+                self.vertex_array[2].tex_coords=temp;
+
+                let temp=self.vertex_array[1].tex_coords;
+                self.vertex_array[1].tex_coords=self.vertex_array[3].tex_coords;
+                self.vertex_array[3].tex_coords=temp;
+            }
+            Direction::Vertical => {
+                // 0-1 2-3
+                let temp=self.vertex_array[0].tex_coords;
+                self.vertex_array[0].tex_coords=self.vertex_array[1].tex_coords;
+                self.vertex_array[1].tex_coords=temp;
+
+                let temp=self.vertex_array[2].tex_coords;
+                self.vertex_array[2].tex_coords=self.vertex_array[3].tex_coords;
+                self.vertex_array[3].tex_coords=temp;
             }
         }
         self.vertex_buffer = glium::VertexBuffer::new(display, &self.vertex_array).unwrap();

@@ -3,7 +3,7 @@ use std::io::Cursor;
 
 use glium::{uniform, Display, Surface};
 
-use crate::shape::{Rectangle, RIGHT, TOP};
+use crate::shape::{Direction, Rectangle, RIGHT, TOP};
 
 struct Rect {
     start: [f32; 2],
@@ -16,6 +16,7 @@ pub trait Transform {
     fn set_position(&mut self, x: f32, y: f32);
     fn set_x(&mut self, x: f32);
     fn set_y(&mut self, y: f32);
+    fn mirror(&mut self, display: &Display, dir: Direction);
     fn get_position(&mut self) -> (f32, f32);
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program);
 }
@@ -29,7 +30,7 @@ pub struct Texture {
     texture: glium::texture::SrgbTexture2d,
     clipped: bool,
     clip_rect: Rect,
-    rect: Rectangle,
+    pub rect: Rectangle,
 }
 
 impl Texture {
@@ -105,6 +106,10 @@ impl Transform for Texture {
     fn set_y(&mut self, y: f32) {
         self.rect.set_y(y);
         self.y = self.rect.matrix[3][1] * TOP;
+    }
+
+    fn mirror(&mut self, display: &Display, dir: Direction) {
+        self.rect.flip_tex_coords(display, dir);
     }
 
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
@@ -249,6 +254,12 @@ impl Transform for AnimatedTexture {
             self.textures[i].set_y(y);
         }
         self.y = self.textures[0].y;
+    }
+
+    fn mirror(&mut self, display: &Display, dir: Direction) {
+        for i in 0..self.frame_count {
+            self.textures[i].mirror(display, dir);
+        }
     }
 
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {

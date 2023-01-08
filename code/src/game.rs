@@ -5,7 +5,7 @@ use glium::{Display, Frame, Program};
 use crate::{
     input_mgr::InputManager,
     player::Player,
-    texture::{AnimatedTexture, Texture, Transform},
+    texture::{AnimatedTexture, Texture, Transform}, shape::Direction,
 };
 
 #[derive(Debug, PartialEq)]
@@ -29,8 +29,8 @@ pub struct Platform {
     x: f32,
     y: f32,
     texture: Texture,
-    platform_type: Type,
     enemies: Vec<AnimatedTexture>,
+    enemy_speed: f32,
     pub fish: Vec<Texture>,
 }
 
@@ -59,30 +59,38 @@ impl Platform {
             }
         }
 
-        let n: usize = (width / 48.0) as usize;
+        (|| {
+            if size == Size::Small {
+                return;
+            }
 
-        (|| match platform_type {
-            Type::Enemy => {
-                let mut e1 = AnimatedTexture::new(display, vec!["./res/enemy1.png"], 0.4, 1);
-                e1.set_position(0.0, 24.0);
-                enemies.push(e1);
+            let n: usize = (width / 48.0) as usize;
+
+            match platform_type {
+                Type::Enemy => {
+                    let mut e1 = AnimatedTexture::new(
+                        display,
+                        vec!["./res/enemy1.png", "./res/enemy2.png"],
+                        0.3,
+                        2,
+                    );
+                    e1.set_position(0.0, 24.0);
+                    enemies.push(e1);
+                }
+                Type::Fish => {
+                    for i in 0..=n / 2 {
+                        let mut f = Texture::new("./res/fish.png", display);
+                        f.set_position(i as f32 * 48.0, 36.0);
+                        fish.push(f);
+                    }
+                    for i in (1..=n / 2).rev() {
+                        let mut f = Texture::new("./res/fish.png", display);
+                        f.set_position(i as f32 * -48.0, 36.0);
+                        fish.push(f);
+                    }
+                }
+                _ => {}
             }
-            Type::Fish => {
-                if size == Size::Small {
-                    return;
-                }
-                for i in 0..=n / 2 {
-                    let mut f = Texture::new("./res/fish.png", display);
-                    f.set_position(i as f32 * 48.0, 36.0);
-                    fish.push(f);
-                }
-                for i in (1..=n / 2).rev() {
-                    let mut f = Texture::new("./res/fish.png", display);
-                    f.set_position(i as f32 * -48.0, 36.0);
-                    fish.push(f);
-                }
-            }
-            _ => {}
         })();
 
         Self {
@@ -91,8 +99,8 @@ impl Platform {
             x: 0.0,
             y: 0.0,
             texture: texture,
-            platform_type: platform_type,
             enemies: enemies,
+            enemy_speed: 0.08,
             fish: fish,
         }
     }
@@ -106,6 +114,11 @@ impl Platform {
             self.fish[i].set_x(x0 + x);
             self.fish[i].set_y(self.y + 72.0)
         }
+        for i in 0..self.enemies.len() {
+            let x0 = self.enemies[i].x;
+            self.enemies[i].set_x(x0 + x);
+            self.enemies[i].set_y(self.y + 80.0)
+        }
     }
 
     pub fn translate(&mut self, x: f32, y: f32) {
@@ -116,12 +129,33 @@ impl Platform {
             let x0 = self.fish[i].x;
             self.fish[i].set_x(x0 + x);
         }
+        for i in 0..self.enemies.len() {
+            let x0 = self.enemies[i].x;
+            self.enemies[i].set_x(x0 + x);
+        }
+    }
+
+    pub fn update(&mut self, display: &Display, dt: f32) {
+        for i in 0..self.enemies.len() {
+            self.enemies[i].update(dt);
+            
+            if self.enemies[i].x + 32.0 >= self.x + self.width / 2.
+                || self.enemies[i].x - 32.0 <= self.x - self.width / 2.
+            {
+                self.enemy_speed *= -1.0;
+                self.enemies[i].mirror(display, Direction::Horizontal);
+            }
+            self.enemies[i].translate(self.enemy_speed, 0.0);
+        }
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.texture.draw(target, program);
         for i in 0..self.fish.len() {
             self.fish[i].draw(target, program);
+        }
+        for i in 0..self.enemies.len() {
+            self.enemies[i].draw(target, program);
         }
     }
 }
@@ -134,7 +168,7 @@ pub struct Game {
 impl Game {
     pub fn new(display: &Display) -> Self {
         let p = Player::new(display);
-        let mut pl = Platform::new(display, Size::Medium, Type::Fish);
+        let mut pl = Platform::new(display, Size::Large, Type::Enemy);
         pl.set_position(100.0, -100.0);
         // let mut pl2 = Platform::new(display, Size::Large, Type::Fish);
         // pl2.translate(LEFT + 96.0, -30.0);
@@ -145,8 +179,11 @@ impl Game {
         }
     }
 
-    pub fn update(&mut self, input: &mut InputManager, dt: f32) {
+    pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
         self.player.update(input, dt);
+        for i in 0..1 {
+            self.platforms[i].update(display, dt);
+        }
 
         for i in 0..1 {
             if self.player.x + self.player.width / 2.

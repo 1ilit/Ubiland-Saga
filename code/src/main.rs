@@ -71,7 +71,7 @@ fn main() {
             _ => (),
         }
         //update game
-        screen_mgr.update(delta_time);
+        screen_mgr.update(&display, delta_time);
 
         let mut target = display.draw();
         target.clear_color(1.0, 1.0, 1.0, 1.0);
