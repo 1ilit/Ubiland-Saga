@@ -5,7 +5,7 @@ use glium::{Display, Frame, Program};
 use crate::{
     input_mgr::InputManager,
     player::Player,
-    texture::{AnimatedTexture, Texture, Transform}, shape::Direction,
+    texture::{AnimatedTexture, Texture, Transform, Collide}, shape::{Direction, BOTTOM},
 };
 
 #[derive(Debug, PartialEq)]
@@ -170,9 +170,9 @@ impl Game {
         let p = Player::new(display);
         let mut pl = Platform::new(display, Size::Large, Type::Enemy);
         pl.set_position(100.0, -100.0);
-        // let mut pl2 = Platform::new(display, Size::Large, Type::Fish);
-        // pl2.translate(LEFT + 96.0, -30.0);
 
+        let mut test =Texture::new("./res/enemy1.png", display);
+        test.set_position(0.0, BOTTOM+test.height/2.0);
         Game {
             player: p,
             platforms: vec![pl],

@@ -73,6 +73,8 @@ impl Player {
         }
 
         self.texture.set_position(self.x, self.y);
+        // println!("in player-> self.x: {}, self. y: {}", self.x, self.y);
+        // println!("in player-> tex.x: {}, tex. y: {}", self.texture.x, self.texture.y);
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {

@@ -6,8 +6,10 @@ use glium::{uniform, Display, Surface};
 use crate::shape::{Direction, Rectangle, RIGHT, TOP};
 
 struct Rect {
-    start: [f32; 2],
-    size: [f32; 2],
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
 }
 
 pub trait Transform {
@@ -18,7 +20,15 @@ pub trait Transform {
     fn set_y(&mut self, y: f32);
     fn mirror(&mut self, display: &Display, dir: Direction);
     fn get_position(&mut self) -> (f32, f32);
+    fn clip(&mut self, x: f32, y: f32, w: f32, h: f32);
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program);
+}
+
+pub trait Collide {
+    fn collide_top(&self, other: &Self) -> bool;
+    fn collide_bottom(&self, other: &Self) -> bool;
+    fn collide_left(&self, other: &Self) -> bool;
+    fn collide_right(&self, other: &Self) -> bool;
 }
 
 pub struct Texture {
@@ -58,19 +68,17 @@ impl Texture {
             texture: texture,
             clipped: false,
             clip_rect: Rect {
-                start: [0.0, 0.0],
-                size: [1.0, 1.0],
+                x: 0.0,
+                y: 0.0,
+                w: 1.0,
+                h: 1.0,
             },
             rect: rect,
         }
     }
 
-    pub fn _clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
-        self.clipped = true;
-        self.clip_rect = Rect {
-            start: [x, y],
-            size: [w, h],
-        };
+    pub fn get_dimensions(&self) -> (f32, f32) {
+        (self.width, self.height)
     }
 }
 
@@ -112,14 +120,24 @@ impl Transform for Texture {
         self.rect.flip_tex_coords(display, dir);
     }
 
+    fn clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
+        self.clipped = true;
+        self.clip_rect = Rect {
+            x: x,
+            y: y,
+            w: w,
+            h: h,
+        };
+    }
+
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
         let uniforms = uniform! {
             matrix: self.rect.matrix,
             isTex: true,
             tex: &self.texture,
             clipped: self.clipped,
-            start: self.clip_rect.start,
-            size: self.clip_rect.size,
+            start: [self.clip_rect.x, self.clip_rect.y],
+            size: [self.clip_rect.w, self.clip_rect.h],
             anim: false,
         };
         target
@@ -134,6 +152,30 @@ impl Transform for Texture {
                 },
             )
             .unwrap();
+    }
+}
+
+impl Collide for Texture {
+    fn collide_bottom(&self, other: &Texture) -> bool {
+        self.y - self.height / 2.0 >= other.y - other.height / 2.0
+            && self.y - self.height / 2.0 <= other.y + other.height / 2.0
+            && (self.x <= other.x + other.width / 2.0 && self.x >= other.x - other.width / 2.0)
+    }
+
+    fn collide_top(&self, other: &Texture) -> bool {
+        other.collide_bottom(self)
+    }
+
+    fn collide_left(&self, other: &Texture) -> bool {
+        (self.x - self.width / 2.0 >= other.x - other.width / 2.0
+            && self.x - self.width / 2.0 <= other.x + other.width / 2.0)
+            && (self.y <= other.y + other.height / 2.0 && self.y >= other.y - other.height / 2.0)
+    }
+
+    fn collide_right(&self, other: &Texture) -> bool {
+        (self.x + self.width / 2.0 >= other.x - other.width / 2.0
+            && self.x + self.width / 2.0 <= other.x + other.width / 2.0)
+            && (self.y <= other.y + other.height / 2.0 && self.y >= other.y - other.height / 2.0)
     }
 }
 
@@ -230,12 +272,12 @@ impl Transform for AnimatedTexture {
     }
 
     fn get_position(&mut self) -> (f32, f32) {
-        self.textures[0].rect.get_position()
+        self.textures[0].get_position()
     }
 
     fn set_position(&mut self, x: f32, y: f32) {
         for i in 0..self.frame_count {
-            self.textures[i].rect.set_position(x, y);
+            self.textures[i].set_position(x, y);
         }
 
         self.x = self.textures[0].x;
@@ -262,7 +304,41 @@ impl Transform for AnimatedTexture {
         }
     }
 
+    fn clip(&mut self, x: f32, y: f32, w: f32, h: f32) {
+        for i in 0..self.frame_count {
+            self.textures[i].clipped = true;
+            self.textures[i].clip_rect = Rect {
+                x: x,
+                y: y,
+                w: w,
+                h: h,
+            };
+        }
+    }
+
     fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
         self.textures[self.current_frame as usize].draw(target, program);
+    }
+}
+
+impl Collide for AnimatedTexture {
+    fn collide_bottom(&self, other: &AnimatedTexture) -> bool {
+        self.y - self.height / 2.0 >= other.y - other.height / 2.0
+            && self.y - self.height / 2.0 <= other.y + other.height / 2.0
+            && (self.x <= other.x + other.width / 2.0 && self.x >= other.x - other.width / 2.0)
+    }
+
+    fn collide_top(&self, other: &AnimatedTexture) -> bool {
+        other.collide_bottom(self)
+    }
+
+    fn collide_left(&self, other: &AnimatedTexture) -> bool {
+        (self.x - self.width / 2.0 >= other.x - other.width / 2.0
+            && self.x - self.width / 2.0 <= other.x + other.width / 2.0)
+            && (self.y <= other.y + other.height / 2.0 && self.y >= other.y - other.height / 2.0)
+    }
+
+    fn collide_right(&self, other: &AnimatedTexture) -> bool {
+        other.collide_left(self)
     }
 }
