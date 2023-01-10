@@ -1,11 +1,12 @@
 use std::vec;
 
-use glium::{Display, Frame, Program};
+use glium::{ Display, Frame, Program,};
 
 use crate::{
     input_mgr::InputManager,
     player::Player,
-    texture::{AnimatedTexture, Texture, Transform, Collide}, shape::{Direction, BOTTOM},
+    shape::{Direction, BOTTOM},
+    texture::{AnimatedTexture, Collide, Texture, Transform},
 };
 
 #[derive(Debug, PartialEq)]
@@ -23,23 +24,103 @@ pub enum Type {
     Fish,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum Species {
+    Land,
+    Flying,
+}
+
+pub struct Enemy {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    texture: AnimatedTexture,
+    speed: f32,
+    dead: bool,
+}
+
+impl Enemy {
+    pub fn new(display: &Display, species: Species) -> Self {
+        let texture: AnimatedTexture;
+        match species {
+            Species::Land => {
+                texture = AnimatedTexture::new(
+                    display,
+                    vec!["./res/enemy1.png", "./res/enemy2.png"],
+                    0.3,
+                    2,
+                );
+            }
+            Species::Flying => {
+                texture = AnimatedTexture::new(
+                    display,
+                    vec!["./res/enemy1.png", "./res/enemy2.png"],
+                    0.3,
+                    2,
+                );
+            }
+        }
+        let (width, height) = texture.get_dimensions();
+        Self {
+            x: 0.0,
+            y: 0.0,
+            width: width,
+            height: height,
+            speed: 200.0,
+            texture: texture,
+            dead: false,
+        }
+    }
+
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        self.texture.set_position(x, y);
+        self.x = x;
+        self.y = y;
+    }
+
+    pub fn update(&mut self, dt: f32){
+        self.texture.update(dt);
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program){
+        self.texture.draw(target, program);
+    }
+
+    fn set_x(&mut self, x: f32){
+        self.texture.set_x(x);
+        self.x=x;
+    }
+
+    fn set_y(&mut self, y: f32) {
+        self.texture.set_y(y);
+        self.y=y;
+    }
+
+    fn translate(&mut self, x: f32, y: f32) {
+        self.texture.translate(x, y);
+        self.x=self.texture.x;
+        self.y=self.texture.y;
+    }
+}
+
 pub struct Platform {
     width: f32,
     height: f32,
     x: f32,
     y: f32,
+    size: Size,
     texture: Texture,
-    enemies: Vec<AnimatedTexture>,
+    enemies: Vec<Enemy>,
     enemy_speed: f32,
-    pub fish: Vec<Texture>,
+    fish: Vec<Texture>,
+    elapsed_time:f32,
 }
 
 impl Platform {
-    pub fn new(display: &Display, size: Size, platform_type: Type) -> Self {
+    pub fn new(display: &Display, size: Size) -> Self {
         let texture: Texture;
         let width: f32;
-        let mut enemies: Vec<AnimatedTexture> = vec![];
-        let mut fish: Vec<Texture> = vec![];
         match size {
             Size::Small => {
                 texture = Texture::new("./res/platform_2.png", display);
@@ -59,50 +140,50 @@ impl Platform {
             }
         }
 
-        (|| {
-            if size == Size::Small {
-                return;
-            }
-
-            let n: usize = (width / 48.0) as usize;
-
-            match platform_type {
-                Type::Enemy => {
-                    let mut e1 = AnimatedTexture::new(
-                        display,
-                        vec!["./res/enemy1.png", "./res/enemy2.png"],
-                        0.3,
-                        2,
-                    );
-                    e1.set_position(0.0, 24.0);
-                    enemies.push(e1);
-                }
-                Type::Fish => {
-                    for i in 0..=n / 2 {
-                        let mut f = Texture::new("./res/fish.png", display);
-                        f.set_position(i as f32 * 48.0, 36.0);
-                        fish.push(f);
-                    }
-                    for i in (1..=n / 2).rev() {
-                        let mut f = Texture::new("./res/fish.png", display);
-                        f.set_position(i as f32 * -48.0, 36.0);
-                        fish.push(f);
-                    }
-                }
-                _ => {}
-            }
-        })();
-
         Self {
             width: width,
             height: 96.0,
             x: 0.0,
             y: 0.0,
+            size: size,
             texture: texture,
-            enemies: enemies,
-            enemy_speed: 0.08,
-            fish: fish,
+            enemies: vec![],
+            enemy_speed: 150.0,
+            fish: vec![],
+            elapsed_time: 0.0,
         }
+    }
+
+    pub fn spawn_entity(&mut self, display: &Display, t: Type, n: u8) {
+        if self.size == Size::Small {
+            return;
+        }
+
+        match t {
+            Type::Enemy => {
+                let mut e = Enemy::new(display, Species::Land);
+                e.set_position(0.0, 24.0);
+                self.enemies.push(e);
+            }
+            Type::Fish => {
+                for i in (1..=n / 2).rev() {
+                    let mut f = Texture::new("./res/fish.png", display);
+                    f.set_position(i as f32 * -48.0, 36.0);
+                    self.fish.push(f);
+                }
+                for i in 0..=n / 2 {
+                    let mut f = Texture::new("./res/fish.png", display);
+                    f.set_position(i as f32 * 48.0, 36.0);
+                    self.fish.push(f);
+                }
+            }
+            _ => {}
+        };
+    }
+
+    pub fn despawn_entity(&mut self){
+        self.enemies.clear();
+        self.fish.clear();
     }
 
     pub fn set_position(&mut self, x: f32, y: f32) {
@@ -117,7 +198,7 @@ impl Platform {
         for i in 0..self.enemies.len() {
             let x0 = self.enemies[i].x;
             self.enemies[i].set_x(x0 + x);
-            self.enemies[i].set_y(self.y + 80.0)
+            self.enemies[i].set_y(self.y + 80.0);
         }
     }
 
@@ -138,14 +219,30 @@ impl Platform {
     pub fn update(&mut self, display: &Display, dt: f32) {
         for i in 0..self.enemies.len() {
             self.enemies[i].update(dt);
-            
+
             if self.enemies[i].x + 32.0 >= self.x + self.width / 2.
                 || self.enemies[i].x - 32.0 <= self.x - self.width / 2.
             {
                 self.enemy_speed *= -1.0;
-                self.enemies[i].mirror(display, Direction::Horizontal);
+                self.enemies[i].texture.mirror(display, Direction::Horizontal);
             }
-            self.enemies[i].translate(self.enemy_speed, 0.0);
+            self.enemies[i].translate(self.enemy_speed*dt, 0.0);
+        }
+
+        for i in 0..self.fish.len(){
+            if self.elapsed_time > 999. {
+                self.elapsed_time = 1.0;
+            }
+            self.elapsed_time += dt;
+    
+            let t = self.elapsed_time * 1.5;
+            let y = t.sin() * 0.02;
+
+            if i%2==1{
+                self.fish[i].translate(0.0, y);
+            } else {
+                self.fish[i].translate(0.0, -y);
+            }
         }
     }
 
@@ -168,11 +265,10 @@ pub struct Game {
 impl Game {
     pub fn new(display: &Display) -> Self {
         let p = Player::new(display);
-        let mut pl = Platform::new(display, Size::Large, Type::Enemy);
+        let mut pl = Platform::new(display, Size::Large);
+        pl.spawn_entity(display, Type::Fish, (pl.width/48.0) as u8);
         pl.set_position(100.0, -100.0);
 
-        let mut test =Texture::new("./res/enemy1.png", display);
-        test.set_position(0.0, BOTTOM+test.height/2.0);
         Game {
             player: p,
             platforms: vec![pl],
@@ -210,7 +306,7 @@ impl Game {
 
         if self.player.right {
             for i in 0..1 {
-                self.platforms[i].translate(-60.0 * dt, 0.0);
+                self.platforms[i].translate(-80.0 * dt, 0.0);
             }
         }
     }
