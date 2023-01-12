@@ -1,25 +1,35 @@
 use std::vec;
 
-use glium::{ Display, Frame, Program,};
+use glium::{Display, Frame, Program};
 
 use crate::{
     input_mgr::InputManager,
     player::Player,
-    shape::{Direction, BOTTOM},
-    texture::{AnimatedTexture, Collide, Texture, Transform},
+    shape::{Direction, LEFT, SCREEN_WIDTH},
+    texture::{AnimatedTexture, Texture, Transform, Collide},
 };
 
 #[derive(Debug, PartialEq)]
 pub enum Size {
-    Small = 2,
-    Medium = 3,
-    Large = 5,
-    XLarge = 7,
+    Small,
+    Medium,
+    Large,
+    XLarge,
+}
+
+impl Size {
+    fn from_u32(value: u32) -> Size {
+        match value {
+            0 => Size::Small,
+            1 => Size::Medium,
+            2 => Size::Large,
+            _ => panic!("Unknown value: {}", value),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Type {
-    Plain,
     Enemy,
     Fish,
 }
@@ -79,28 +89,28 @@ impl Enemy {
         self.y = y;
     }
 
-    pub fn update(&mut self, dt: f32){
+    pub fn update(&mut self, dt: f32) {
         self.texture.update(dt);
     }
 
-    pub fn draw(&mut self, target: &mut Frame, program: &Program){
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.texture.draw(target, program);
     }
 
-    fn set_x(&mut self, x: f32){
+    fn set_x(&mut self, x: f32) {
         self.texture.set_x(x);
-        self.x=x;
+        self.x = x;
     }
 
     fn set_y(&mut self, y: f32) {
         self.texture.set_y(y);
-        self.y=y;
+        self.y = y;
     }
 
     fn translate(&mut self, x: f32, y: f32) {
         self.texture.translate(x, y);
-        self.x=self.texture.x;
-        self.y=self.texture.y;
+        self.x = self.texture.x;
+        self.y = self.texture.y;
     }
 }
 
@@ -114,7 +124,7 @@ pub struct Platform {
     enemies: Vec<Enemy>,
     enemy_speed: f32,
     fish: Vec<Texture>,
-    elapsed_time:f32,
+    elapsed_time: f32,
 }
 
 impl Platform {
@@ -177,11 +187,10 @@ impl Platform {
                     self.fish.push(f);
                 }
             }
-            _ => {}
         };
     }
 
-    pub fn despawn_entity(&mut self){
+    pub fn despawn_entity(&mut self) {
         self.enemies.clear();
         self.fish.clear();
     }
@@ -224,21 +233,23 @@ impl Platform {
                 || self.enemies[i].x - 32.0 <= self.x - self.width / 2.
             {
                 self.enemy_speed *= -1.0;
-                self.enemies[i].texture.mirror(display, Direction::Horizontal);
+                self.enemies[i]
+                    .texture
+                    .mirror(display, Direction::Horizontal);
             }
-            self.enemies[i].translate(self.enemy_speed*dt, 0.0);
+            self.enemies[i].translate(self.enemy_speed * dt, 0.0);
         }
 
-        for i in 0..self.fish.len(){
+        for i in 0..self.fish.len() {
             if self.elapsed_time > 999. {
                 self.elapsed_time = 1.0;
             }
             self.elapsed_time += dt;
-    
+
             let t = self.elapsed_time * 1.5;
             let y = t.sin() * 0.02;
 
-            if i%2==1{
+            if i % 2 == 1 {
                 self.fish[i].translate(0.0, y);
             } else {
                 self.fish[i].translate(0.0, -y);
@@ -260,28 +271,65 @@ impl Platform {
 pub struct Game {
     player: Player,
     platforms: Vec<Platform>,
+    controls: Vec<Texture>,
+    elapsed_time: f32,
 }
 
 impl Game {
     pub fn new(display: &Display) -> Self {
         let p = Player::new(display);
-        let mut pl = Platform::new(display, Size::Large);
-        pl.spawn_entity(display, Type::Fish, (pl.width/48.0) as u8);
-        pl.set_position(100.0, -100.0);
+
+        let mut platforms: Vec<Platform> = vec![];
+
+        let mut starting_platform = Platform::new(display, Size::XLarge);
+        starting_platform.set_position(LEFT + 100.0, -50.0);
+        platforms.push(starting_platform);
+
+        for i in 0..9 {
+            platforms.push(Platform::new(display, Size::from_u32(i % 3)));
+        }
+
+        for i in 1..4 {
+            let w = (platforms[i].width / 48.0) as u8;
+            platforms[i].spawn_entity(display, Type::Fish, w);
+        }
+
+        for i in 4..7 {
+            let w = (platforms[i].width / 48.0) as u8;
+            platforms[i].spawn_entity(display, Type::Enemy, w);
+        }
+
+        for i in 1..10 {
+            platforms[i].set_position(-SCREEN_WIDTH, 0.0);
+        }
+
+        platforms[9].set_position(510.0, -100.0);
+
+        let mut controls: Vec<Texture> = vec![];
+        let mut c1 = Texture::new("./res/controls1.png", display);
+        c1.scale(0.8);
+        c1.set_position(-210.0, 160.0);
+        controls.push(c1);
+        let mut c2 = Texture::new("./res/controls2.png", display);
+        c2.scale(0.8);
+        c2.set_position(510.0, 160.0);
+        controls.push(c2);
 
         Game {
             player: p,
-            platforms: vec![pl],
+            platforms: platforms,
+            controls: controls,
+            elapsed_time: 0.0,
         }
     }
 
     pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
         self.player.update(input, dt);
-        for i in 0..1 {
+        for i in 0..self.platforms.len() {
             self.platforms[i].update(display, dt);
         }
 
-        for i in 0..1 {
+        for i in 0..self.platforms.len() {
             if self.player.x + self.player.width / 2.
                 >= self.platforms[i].x - self.platforms[i].width / 2.
                 && self.player.x - self.player.width / 2.
@@ -304,15 +352,33 @@ impl Game {
             }
         }
 
+        for i in 0..self.controls.len(){
+            if self.elapsed_time > 999. {
+                self.elapsed_time = 1.0;
+            }
+            self.elapsed_time += dt;
+
+            let t = self.elapsed_time * 1.5;
+            let y = t.sin() * 0.04;
+
+            self.controls[i].translate(0.0, y);
+        }
+
         if self.player.right {
-            for i in 0..1 {
+            for i in 0..self.platforms.len() {
                 self.platforms[i].translate(-80.0 * dt, 0.0);
+            }
+            for i in 0..self.controls.len(){
+                self.controls[i].translate(-80.0 * dt, 0.0);
             }
         }
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        for i in 0..1 {
+        for i in 0..self.controls.len() {
+            self.controls[i].draw(target, program);
+        }
+        for i in 0..self.platforms.len() {
             self.platforms[i].draw(target, program);
         }
 

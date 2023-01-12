@@ -5,11 +5,11 @@ use glium::{uniform, Display, Surface};
 
 use crate::shape::{Direction, Rectangle, RIGHT, TOP};
 
-struct Rect {
-    x: f32,
-    y: f32,
-    w: f32,
-    h: f32,
+pub struct Rect {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
 }
 
 pub trait Transform {
@@ -40,7 +40,7 @@ pub struct Texture {
     texture: glium::texture::SrgbTexture2d,
     clipped: bool,
     clip_rect: Rect,
-    pub rect: Rectangle,
+    rect: Rectangle,
 }
 
 impl Texture {
@@ -173,9 +173,7 @@ impl Collide for Texture {
     }
 
     fn collide_right(&self, other: &Texture) -> bool {
-        (self.x + self.width / 2.0 >= other.x - other.width / 2.0
-            && self.x + self.width / 2.0 <= other.x + other.width / 2.0)
-            && (self.y <= other.y + other.height / 2.0 && self.y >= other.y - other.height / 2.0)
+        other.collide_left(self)
     }
 }
 
