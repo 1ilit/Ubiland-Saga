@@ -9,6 +9,8 @@ mod screen_mgr;
 mod shape;
 mod start_screen;
 mod texture;
+mod platform;
+mod enemy;
 
 use std::time::Instant;
 use crate::screen_mgr::ScreenMgr;
