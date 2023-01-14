@@ -2,6 +2,7 @@ use glium::{Program, Frame, Display};
 
 use crate::texture::{AnimatedTexture, Transform};
 
+pub const SPAWN_DELAY: f32 = 30.0;
 
 #[derive(Debug, PartialEq)]
 pub enum Species {
@@ -34,9 +35,9 @@ impl Enemy {
             Species::Flying => {
                 texture = AnimatedTexture::new(
                     display,
-                    vec!["./res/enemy1.png", "./res/enemy2.png"],
-                    0.3,
-                    2,
+                    vec!["./res/enemy3.png", "./res/enemy4.png", "./res/enemy5.png", "./res/enemy6.png", "./res/enemy5.png", "./res/enemy4.png", "./res/enemy3.png"],
+                    0.15,
+                    7,
                 );
             }
         }

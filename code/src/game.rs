@@ -4,6 +4,7 @@ use glium::{Display, Frame, Program};
 use rand::{rngs::ThreadRng, Rng};
 
 use crate::{
+    enemy::{Enemy, Species, SPAWN_DELAY},
     input_mgr::InputManager,
     platform::{Platform, Size, Type},
     player::Player,
@@ -26,8 +27,10 @@ fn overlap(a: Rect, b: Rect) -> bool {
 pub struct Game {
     player: Player,
     platforms: Vec<Platform>,
+    enemies: Vec<Enemy>,
     controls: Vec<Texture>,
     elapsed_time: f32,
+    spawn_time: f32,
     rand: ThreadRng,
 }
 
@@ -59,11 +62,16 @@ impl Game {
         controls[1].scale(0.8);
         controls[1].set_position(510.0, 160.0);
 
+        let mut enemies: Vec<Enemy> = vec![Enemy::new(display, Species::Flying)];
+        enemies[0].set_position(RIGHT, 0.0);
+
         Game {
             player: p,
             platforms: platforms,
+            enemies: enemies,
             controls: controls,
             elapsed_time: 0.0,
+            spawn_time: 0.0,
             rand: rand::thread_rng(),
         }
     }
@@ -73,6 +81,16 @@ impl Game {
 
         for i in 0..self.platforms.len() {
             self.platforms[i].update(display, dt);
+        }
+
+        for i in 0..self.enemies.len() {
+            self.enemies[i].update(dt);
+            self.enemies[i].translate(-120.0 * dt, 0.0);
+            if self.enemies[i].x <= LEFT - self.enemies[i].width {
+                let x = self.rand.gen_range(RIGHT..SCREEN_WIDTH);
+                let y = self.rand.gen_range(BOTTOM+40.0..TOP-40.0);
+                self.enemies[i].set_position(x, y);
+            }
         }
 
         for i in 0..self.platforms.len() {
@@ -90,7 +108,21 @@ impl Game {
                         let y0 = self.platforms[j].y;
                         let w0 = self.platforms[j].width;
                         let h0 = self.platforms[j].height;
-                        if overlap(Rect {x: x,  y: y,  w: w,  h: h,}, Rect {x: x0, y: y0, w: w0, h: h0,}) && i != j {
+                        if overlap(
+                            Rect {
+                                x: x,
+                                y: y,
+                                w: w,
+                                h: h,
+                            },
+                            Rect {
+                                x: x0,
+                                y: y0,
+                                w: w0,
+                                h: h0,
+                            },
+                        ) && i != j
+                        {
                             intersects = true;
                             break;
                         }
@@ -136,12 +168,22 @@ impl Game {
             }
         }
 
-        for i in 0..self.controls.len() {
-            if self.elapsed_time > 999. {
-                self.elapsed_time = 1.0;
-            }
-            self.elapsed_time += dt;
+        if self.elapsed_time > 999. {
+            self.elapsed_time = 1.0;
+        }
+        self.elapsed_time += dt;
+        self.spawn_time += dt;
 
+        if self.spawn_time >= SPAWN_DELAY {
+            self.enemies.push(Enemy::new(display, Species::Flying));
+            let x = self.rand.gen_range(RIGHT..SCREEN_WIDTH);
+            let y = self.rand.gen_range(BOTTOM..TOP);
+            let i = self.enemies.len() - 1;
+            self.enemies[i].set_position(x, y);
+            self.spawn_time = 0.0;
+        }
+
+        for i in 0..self.controls.len() {
             let t = self.elapsed_time * 1.5;
             let y = t.sin() * 0.04;
 
@@ -167,5 +209,9 @@ impl Game {
         }
 
         self.player.draw(target, program);
+
+        for i in 0..self.enemies.len() {
+            self.enemies[i].draw(target, program);
+        }
     }
 }

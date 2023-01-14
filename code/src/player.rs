@@ -14,6 +14,7 @@ pub struct Player {
     pub velocity: [f32; 2],
     pub on_platform: bool,
     pub right: bool,
+    pub distance: f32,
 }
 
 impl Player {
@@ -39,6 +40,7 @@ impl Player {
             velocity: [0.0, 0.0],
             on_platform: false,
             right: false,
+            distance: 0.0,
         }
     }
 
@@ -58,12 +60,14 @@ impl Player {
         }
         if input.key_down(VirtualKeyCode::Right) {
             self.x += 200.0 * dt;
+            self.distance+=dt;
             self.right = true;
         } else {
             self.right = false;
         }
         if input.key_down(VirtualKeyCode::Left) && self.on_platform{
             self.x -= 200.0 * dt;
+            self.distance-=dt;
         }
 
         if self.x >= 0.0 {
@@ -73,8 +77,6 @@ impl Player {
         }
 
         self.texture.set_position(self.x, self.y);
-        // println!("in player-> self.x: {}, self. y: {}", self.x, self.y);
-        // println!("in player-> tex.x: {}, tex. y: {}", self.texture.x, self.texture.y);
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
