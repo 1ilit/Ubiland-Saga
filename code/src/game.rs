@@ -1,6 +1,6 @@
 use std::vec;
 
-use glium::{Display, Frame, Program};
+use glium::{Display, Frame, Program, glutin::event::VirtualKeyCode};
 use rand::{rngs::ThreadRng, Rng};
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
     platform::{Platform, Size, Type},
     player::Player,
     shape::{BOTTOM, LEFT, RIGHT, SCREEN_WIDTH, TOP},
-    texture::{Rect, Texture, Transform},
+    texture::{Rect, Texture, Transform, Score},
 };
 
 fn overlap(a: Rect, b: Rect) -> bool {
@@ -32,6 +32,7 @@ pub struct Game {
     elapsed_time: f32,
     spawn_time: f32,
     rand: ThreadRng,
+    score: Score,
 }
 
 impl Game {
@@ -73,11 +74,16 @@ impl Game {
             elapsed_time: 0.0,
             spawn_time: 0.0,
             rand: rand::thread_rng(),
+            score: Score::new(display)
         }
     }
 
     pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
         self.player.update(input, dt);
+
+        if input.key_went_up(VirtualKeyCode::T){
+            self.score.increment(display);
+        }
 
         for i in 0..self.platforms.len() {
             self.platforms[i].update(display, dt);
@@ -213,5 +219,7 @@ impl Game {
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(target, program);
         }
+
+        self.score.draw(target, program);
     }
 }

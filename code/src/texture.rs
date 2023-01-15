@@ -1,5 +1,5 @@
-use std::fs::read;
 use std::io::Cursor;
+use std::{fs::read, vec};
 
 use glium::{uniform, Display, Surface};
 
@@ -338,5 +338,53 @@ impl Collide for AnimatedTexture {
 
     fn collide_right(&self, other: &AnimatedTexture) -> bool {
         other.collide_left(self)
+    }
+}
+
+pub struct Score {
+    pub value: u32,
+    textures: Vec<Texture>,
+}
+
+impl Score {
+    pub fn new(display: &Display) -> Self {
+        Self {
+            value: 0,
+            textures: vec![Texture::new("./res/digits/0.png", display)],
+        }
+    }
+
+    pub fn increment(&mut self, display: &Display) {
+        self.value += 1;
+        println!("{}", self.value);
+
+        let mut temp = self.value;
+        let mut i = 0;
+        while temp > 0 && i < self.textures.len() {
+            let x = self.textures[i].x;
+            if temp % 10 != 0 {
+                self.textures[i] =
+                    Texture::new(format!("./res/digits/{}.png", temp % 10).as_str(), display);
+                self.textures[i].set_x(x);
+                return;
+            } else {
+                self.textures[i] = Texture::new("./res/digits/0.png", display);
+                self.textures[i].set_x(x);
+            }
+            i += 1;
+            temp /= 10;
+        }
+
+        self.textures
+            .push(Texture::new("./res/digits/1.png", display));
+        let i = self.textures.len();
+        let x = self.textures[i - 2].x;
+        self.textures[i - 1].set_x(x - 48.0);
+    }
+
+    pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
+        for i in 0..self.textures.len() {
+            self.textures[i].draw(target, program);
+        }
     }
 }
