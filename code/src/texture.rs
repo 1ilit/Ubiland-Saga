@@ -356,8 +356,6 @@ impl Score {
 
     pub fn increment(&mut self, display: &Display) {
         self.value += 1;
-        println!("{}", self.value);
-
         let mut temp = self.value;
         let mut i = 0;
         while temp > 0 && i < self.textures.len() {
@@ -378,8 +376,10 @@ impl Score {
         self.textures
             .push(Texture::new("./res/digits/1.png", display));
         let i = self.textures.len();
+        let w0=self.textures[i-1].width/2.;
+        let w1=self.textures[i-2].width/2.;
         let x = self.textures[i - 2].x;
-        self.textures[i - 1].set_x(x - 48.0);
+        self.textures[i - 1].set_x(x - w0-w1);
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
