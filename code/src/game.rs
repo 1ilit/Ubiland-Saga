@@ -1,6 +1,6 @@
 use std::vec;
 
-use glium::{Display, Frame, Program, glutin::event::VirtualKeyCode};
+use glium::{glutin::event::VirtualKeyCode, Display, Frame, Program};
 use rand::{rngs::ThreadRng, Rng};
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
     platform::{Platform, Size, Type},
     player::Player,
     shape::{BOTTOM, LEFT, RIGHT, SCREEN_WIDTH, TOP},
-    texture::{Rect, Texture, Transform, Score},
+    texture::{AnimatedTexture, Rect, Score, Texture, Transform},
 };
 
 fn overlap(a: Rect, b: Rect) -> bool {
@@ -24,6 +24,26 @@ fn overlap(a: Rect, b: Rect) -> bool {
     true
 }
 
+fn intersect(a: &Texture, b: &AnimatedTexture) -> bool {
+    if a.y - a.height / 2.0 >= b.y + b.height / 2.0 {
+        return false;
+    }
+
+    if a.y + a.height / 2.0 <= b.y - b.height / 2.0 {
+        return false;
+    }
+
+    if a.x + a.width / 2.0 <= b.x - b.width / 2.0 {
+        return false;
+    }
+
+    if a.x - a.width / 2.0 >= b.x + b.width / 2.0 {
+        return false;
+    }
+
+    true
+}
+
 pub struct Game {
     player: Player,
     platforms: Vec<Platform>,
@@ -32,7 +52,7 @@ pub struct Game {
     elapsed_time: f32,
     spawn_time: f32,
     rand: ThreadRng,
-    score: Score,
+    score: u32,
 }
 
 impl Game {
@@ -74,19 +94,23 @@ impl Game {
             elapsed_time: 0.0,
             spawn_time: 0.0,
             rand: rand::thread_rng(),
-            score: Score::new(display)
+            score: 0,
         }
     }
 
     pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
         self.player.update(input, dt);
 
-        if input.key_went_up(VirtualKeyCode::T){
-            self.score.increment(display);
-        }
-
         for i in 0..self.platforms.len() {
             self.platforms[i].update(display, dt);
+            if self.platforms[i].platform_type==Type::Fish{
+                for j in 0..self.platforms[i].fish.len(){
+                    if intersect(&self.platforms[i].fish[j].texture, &self.player.texture) && !self.platforms[i].fish[j].taken{
+                        self.score+=1;
+                        self.platforms[i].fish[j].taken=true;
+                    }
+                }
+            }
         }
 
         for i in 0..self.enemies.len() {
@@ -94,7 +118,7 @@ impl Game {
             self.enemies[i].translate(-120.0 * dt, 0.0);
             if self.enemies[i].x <= LEFT - self.enemies[i].width {
                 let x = self.rand.gen_range(RIGHT..SCREEN_WIDTH);
-                let y = self.rand.gen_range(BOTTOM+40.0..TOP-40.0);
+                let y = self.rand.gen_range(BOTTOM + 40.0..TOP - 40.0);
                 self.enemies[i].set_position(x, y);
             }
         }
@@ -219,7 +243,5 @@ impl Game {
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(target, program);
         }
-
-        self.score.draw(target, program);
     }
 }

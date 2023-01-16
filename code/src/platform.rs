@@ -27,12 +27,54 @@ impl Size {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Type {
     Enemy,
     Fish,
     Plain,
 }
+
+pub struct Fish {
+    pub texture: Texture,
+    x: f32,
+    y: f32,
+    pub taken: bool,
+}
+
+impl Fish {
+    pub fn new(display: &Display) -> Self {
+        Self {
+            texture: Texture::new("./res/fish.png", display),
+            x: 0.0,
+            y: 0.0,
+            taken: false,
+        }
+    }
+
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        self.texture.set_position(x, y);
+        self.x = x;
+        self.y = y;
+    }
+
+    pub fn translate(&mut self, x: f32, y: f32) {
+        self.texture.translate(x, y);
+        self.x = self.texture.x;
+        self.y = self.texture.y;
+    }
+
+    pub fn set_x(&mut self, x: f32) {
+        self.texture.set_x(x);
+        self.x = x;
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        if !self.taken {
+            self.texture.draw(target, program);
+        }
+    }
+}
+
 pub struct Platform {
     pub width: f32,
     pub height: f32,
@@ -42,7 +84,7 @@ pub struct Platform {
     pub texture: Texture,
     pub enemies: Vec<Enemy>,
     pub enemy_speed: f32,
-    pub fish: Vec<Texture>,
+    pub fish: Vec<Fish>,
     pub elapsed_time: f32,
     pub platform_type: Type,
 }
@@ -71,25 +113,20 @@ impl Platform {
         }
 
         let mut enemies: Vec<Enemy> = vec![];
-        let mut fish: Vec<Texture> = vec![];
+        let mut fish: Vec<Fish> = vec![];
 
         (|| {
             if size == Size::Small {
                 return;
             }
-            let n = (width / 48.0) as usize;
+            let n = (width / 48.0) as i32;
 
             let mut e = Enemy::new(display, Species::Land);
             e.set_position(0.0, 24.0);
             enemies.push(e);
 
-            for i in (1..=n / 2).rev() {
-                let mut f = Texture::new("./res/fish.png", display);
-                f.set_position(i as f32 * -48.0, 36.0);
-                fish.push(f);
-            }
-            for i in 0..=n / 2 {
-                let mut f = Texture::new("./res/fish.png", display);
+            for i in -(n / 2)..=n / 2 {
+                let mut f = Fish::new(display);
                 f.set_position(i as f32 * 48.0, 36.0);
                 fish.push(f);
             }
@@ -112,6 +149,11 @@ impl Platform {
 
     pub fn set_type(&mut self, t: Type) {
         self.platform_type = t;
+        if t == Type::Fish {
+            for i in 0..self.fish.len() {
+                self.fish[i].taken = false;
+            }
+        }
     }
 
     pub fn set_position(&mut self, x: f32, y: f32) {
@@ -129,7 +171,7 @@ impl Platform {
             self.fish[i].set_position(self.x + i as f32 * -48.0, self.y + 84.0);
         }
         for i in 0..self.enemies.len() {
-            self.enemies[i].set_position(self.x, self.y+80.0);
+            self.enemies[i].set_position(self.x, self.y + 80.0);
         }
     }
 
