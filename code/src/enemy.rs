@@ -1,4 +1,4 @@
-use glium::{Program, Frame, Display};
+use glium::{Display, Frame, Program};
 
 use crate::texture::{AnimatedTexture, Transform};
 
@@ -35,7 +35,15 @@ impl Enemy {
             Species::Flying => {
                 texture = AnimatedTexture::new(
                     display,
-                    vec!["./res/enemy3.png", "./res/enemy4.png", "./res/enemy5.png", "./res/enemy6.png", "./res/enemy5.png", "./res/enemy4.png", "./res/enemy3.png"],
+                    vec![
+                        "./res/enemy3.png",
+                        "./res/enemy4.png",
+                        "./res/enemy5.png",
+                        "./res/enemy6.png",
+                        "./res/enemy5.png",
+                        "./res/enemy4.png",
+                        "./res/enemy3.png",
+                    ],
                     0.15,
                     7,
                 );
@@ -64,7 +72,9 @@ impl Enemy {
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        self.texture.draw(target, program);
+        if !self.dead {
+            self.texture.draw(target, program);
+        }
     }
 
     pub fn set_x(&mut self, x: f32) {

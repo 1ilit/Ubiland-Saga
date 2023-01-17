@@ -6,16 +6,17 @@ use crate::input_mgr::InputManager;
 use crate::start_screen::StartScreen;
 use crate::background::Background;
 
-enum CurrentScreen {
+enum Screen {
     Start,
     Play,
+    GameOver,
 }
 
 pub struct ScreenMgr {
     pub game: Game,
     pub start: StartScreen,
     pub input: InputManager,
-    current_screen: CurrentScreen,
+    current_screen: Screen,
     background: Background,
 }
 
@@ -30,7 +31,7 @@ impl ScreenMgr {
             game: game,
             start: start,
             input: input,
-            current_screen: CurrentScreen::Start,
+            current_screen: Screen::Start,
             background: background,
         }
     }
@@ -38,14 +39,20 @@ impl ScreenMgr {
     pub fn update(&mut self, display: &Display, dt: f32) {
         self.background.update(dt);
         match self.current_screen {
-            CurrentScreen::Start => {
+            Screen::Start => {
                 self.start.update(&mut self.input, dt);
                 if self.start.menu_choice==0 && self.input.key_went_up(VirtualKeyCode::Return) {
-                    self.current_screen = CurrentScreen::Play;
+                    self.current_screen = Screen::Play;
                 }
             }
-            CurrentScreen::Play => {
+            Screen::Play => {
                 self.game.update(&mut self.input, display, dt);
+                if  self.game.game_over(){
+                    self.current_screen=Screen::GameOver;
+                }
+            }
+            Screen::GameOver=>{
+
             }
         }
     }
@@ -53,11 +60,14 @@ impl ScreenMgr {
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.background.draw(target, program);
         match self.current_screen {
-            CurrentScreen::Start => {
+            Screen::Start => {
                 self.start.draw(target, program);
             }
-            CurrentScreen::Play => {
+            Screen::Play => {
                 self.game.draw(target, program);
+            }
+            Screen::GameOver=>{
+
             }
         }
     }

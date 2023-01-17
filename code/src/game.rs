@@ -9,7 +9,7 @@ use crate::{
     platform::{Platform, Size, Type},
     player::Player,
     shape::{BOTTOM, LEFT, RIGHT, SCREEN_WIDTH, TOP},
-    texture::{AnimatedTexture, Rect, Score, Texture, Transform},
+    texture::{AnimatedTexture, Collide, Rect, Score, Texture, Transform},
 };
 
 fn overlap_x(a: Rect, b: Rect) -> bool {
@@ -49,6 +49,11 @@ fn player_landed(player: &Player, platform: &Platform) -> bool {
         && player.x - player.width / 2. <= platform.x + platform.width / 2.
         && player.y - player.height / 2. + player.velocity[1] <= platform.y + platform.height / 2.
         && player.y - player.height / 2. >= platform.y + platform.height / 2.0
+}
+
+fn player_killed(player: &Player, enemy: &Enemy) -> bool {
+    (player.texture.collide_left(&enemy.texture) || player.texture.collide_right(&enemy.texture))
+        && !enemy.dead
 }
 
 pub struct Game {
@@ -107,21 +112,40 @@ impl Game {
         }
     }
 
+    pub fn game_over(&self)->bool{
+        self.player.dead
+    }
+
     pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
         self.player.update(input, dt);
 
         for i in 0..self.platforms.len() {
             self.platforms[i].update(display, dt);
-            if self.platforms[i].platform_type != Type::Fish {
-                continue;
-            }
-            for j in 0..self.platforms[i].fish.len() {
-                if intersect(&self.platforms[i].fish[j].texture, &self.player.texture)
-                    && !self.platforms[i].fish[j].taken
-                {
-                    self.score += 1;
-                    self.platforms[i].fish[j].taken = true;
+            match self.platforms[i].platform_type {
+                Type::Fish => {
+                    for j in 0..self.platforms[i].fish.len() {
+                        if intersect(&self.platforms[i].fish[j].texture, &self.player.texture)
+                            && !self.platforms[i].fish[j].taken
+                        {
+                            self.score += 1;
+                            self.platforms[i].fish[j].taken = true;
+                        }
+                    }
                 }
+                Type::Enemy => {
+                    for j in 0..self.platforms[i].enemies.len() {
+                        if self
+                            .player
+                            .texture
+                            .collide_bottom(&self.platforms[i].enemies[j].texture)
+                        {
+                            self.platforms[i].enemies[j].dead = true;
+                        } else if player_killed(&self.player, &self.platforms[i].enemies[j]) {
+                            self.player.dead = true;
+                        }
+                    }
+                }
+                _ => {}
             }
         }
 
@@ -132,6 +156,11 @@ impl Game {
                 let x = self.rand.gen_range(RIGHT..SCREEN_WIDTH);
                 let y = self.rand.gen_range(BOTTOM + 40.0..TOP - 40.0);
                 self.enemies[i].set_position(x, y);
+            }
+            if self.player.texture.collide_bottom(&self.enemies[i].texture) {
+                self.enemies[i].dead = true;
+            } else if player_killed(&self.player, &self.enemies[i]) {
+                self.player.dead = true;
             }
         }
 
@@ -207,7 +236,7 @@ impl Game {
             }
         }
 
-        if self.elapsed_time > 9999. {
+        if self.elapsed_time > 999999. {
             self.elapsed_time = 1.0;
         }
         self.elapsed_time += dt;

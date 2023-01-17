@@ -149,10 +149,18 @@ impl Platform {
 
     pub fn set_type(&mut self, t: Type) {
         self.platform_type = t;
-        if t == Type::Fish {
-            for i in 0..self.fish.len() {
-                self.fish[i].taken = false;
+        match t {
+            Type::Fish => {
+                for i in 0..self.fish.len() {
+                    self.fish[i].taken = false;
+                }
             }
+            Type::Enemy => {
+                for i in 0..self.enemies.len() {
+                    self.enemies[i].dead = false;
+                }
+            }
+            _ => {}
         }
     }
 
