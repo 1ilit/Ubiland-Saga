@@ -47,9 +47,9 @@ impl ScreenMgr {
             }
             Screen::Play => {
                 self.game.update(&mut self.input, display, dt);
-                if  self.game.game_over(){
-                    self.current_screen=Screen::GameOver;
-                }
+                // if  self.game.game_over(){
+                //     self.current_screen=Screen::GameOver;
+                // }
             }
             Screen::GameOver=>{
 

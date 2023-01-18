@@ -223,7 +223,7 @@ impl AnimatedTexture {
         }
     }
 
-    pub fn _set_mode(&mut self, mode: AnimationMode) {
+    pub fn set_mode(&mut self, mode: AnimationMode) {
         self.mode = mode;
     }
 
@@ -234,8 +234,11 @@ impl AnimatedTexture {
                 self.current_frame = (self.current_frame + 1) % self.frame_count as u8;
                 self.animation_timer -= self.speed;
             } else {
-                self.animation_done = true;
-                self.animation_timer = self.speed - self.time_per_frame;
+                self.current_frame += 1;
+                if self.current_frame == self.frame_count as u8 {
+                    self.animation_done = true;
+                    self.current_frame -= 1;
+                }
             }
         }
     }
@@ -376,10 +379,10 @@ impl Score {
         self.textures
             .push(Texture::new("./res/digits/1.png", display));
         let i = self.textures.len();
-        let w0=self.textures[i-1].width/2.;
-        let w1=self.textures[i-2].width/2.;
+        let w0 = self.textures[i - 1].width / 2.;
+        let w1 = self.textures[i - 2].width / 2.;
         let x = self.textures[i - 2].x;
-        self.textures[i - 1].set_x(x - w0-w1);
+        self.textures[i - 1].set_x(x - w0 - w1);
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {

@@ -9,7 +9,7 @@ use crate::{
     platform::{Platform, Size, Type},
     player::Player,
     shape::{BOTTOM, LEFT, RIGHT, SCREEN_WIDTH, TOP},
-    texture::{AnimatedTexture, Collide, Rect, Score, Texture, Transform},
+    texture::{AnimatedTexture, AnimationMode, Collide, Rect, Score, Texture, Transform},
 };
 
 fn overlap_x(a: Rect, b: Rect) -> bool {
@@ -65,7 +65,6 @@ pub struct Game {
     spawn_time: f32,
     rand: ThreadRng,
     score: u32,
-    test: Texture,
 }
 
 impl Game {
@@ -96,9 +95,6 @@ impl Game {
         controls[1].scale(0.8);
         controls[1].set_position(510.0, 160.0);
 
-        // let mut enemies: Vec<Enemy> = vec![Enemy::new(display, Species::Flying)];
-        // enemies[0].set_position(RIGHT, 0.0);
-
         Game {
             player: p,
             platforms: platforms,
@@ -108,11 +104,10 @@ impl Game {
             spawn_time: 0.0,
             rand: rand::thread_rng(),
             score: 0,
-            test: Texture::new("./res/flag.png", display),
         }
     }
 
-    pub fn game_over(&self)->bool{
+    pub fn game_over(&self) -> bool {
         self.player.dead
     }
 
@@ -151,13 +146,20 @@ impl Game {
 
         for i in 0..self.enemies.len() {
             self.enemies[i].update(dt);
-            self.enemies[i].translate(-120.0 * dt, 0.0);
-            if self.enemies[i].x <= LEFT - self.enemies[i].width {
+            if !self.enemies[i].dead {
+                self.enemies[i].translate(-120.0 * dt, 0.0);
+            } else {
+                self.enemies[i].apply_gravity(dt);
+            }
+            if self.enemies[i].x <= LEFT - self.enemies[i].width
+                || self.enemies[i].y <= BOTTOM - self.enemies[i].height
+            {
                 let x = self.rand.gen_range(RIGHT..SCREEN_WIDTH);
                 let y = self.rand.gen_range(BOTTOM + 40.0..TOP - 40.0);
                 self.enemies[i].set_position(x, y);
+                self.enemies[i].dead = false;
             }
-            if self.player.texture.collide_bottom(&self.enemies[i].texture) {
+            if self.player.texture.collide_bottom(&self.enemies[i].texture) && !self.player.dead{
                 self.enemies[i].dead = true;
             } else if player_killed(&self.player, &self.enemies[i]) {
                 self.player.dead = true;
@@ -257,7 +259,7 @@ impl Game {
             }
         }
 
-        if self.player.distance < 50.0 {
+        if self.player.distance < 0.0 {
             return;
         }
 
@@ -286,7 +288,5 @@ impl Game {
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(target, program);
         }
-
-        // self.test.draw(target, program);
     }
 }

@@ -179,7 +179,7 @@ impl Platform {
             self.fish[i].set_position(self.x + i as f32 * -48.0, self.y + 84.0);
         }
         for i in 0..self.enemies.len() {
-            self.enemies[i].set_position(self.x, self.y + 80.0);
+            self.enemies[i].set_position(self.x, self.y + 78.0);
         }
     }
 
