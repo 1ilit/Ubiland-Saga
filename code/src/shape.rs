@@ -33,7 +33,7 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
-    pub fn new(display: &glium::Display, w: u32, h: u32) -> Self {
+    pub fn new(display: &glium::Display, w: f32, h: f32) -> Self {
         let x = ((w as f32) * 2. / SCREEN_WIDTH) / 2.;
         let y = ((h as f32) * 2. / SCREEN_HEIGHT) / 2.;
 

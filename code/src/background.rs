@@ -25,7 +25,7 @@ impl Background {
 
         let clouds = [big_cloud1, big_cloud2, big_cloud3];
 
-        let mut rect = Rectangle::new(display, SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32);
+        let mut rect = Rectangle::new(display, SCREEN_WIDTH, SCREEN_HEIGHT);
         rect.set_color(display, [0.8, 0.5, 0.3, 1.0]);
         rect.set_gradient(
             display,

@@ -2,7 +2,7 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::input_mgr::InputManager;
-use crate::shape::SCREEN_WIDTH;
+use crate::shape::{SCREEN_WIDTH};
 use crate::texture::{Texture, Transform};
 
 pub struct StartScreen {

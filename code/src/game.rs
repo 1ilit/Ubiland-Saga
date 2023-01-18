@@ -9,7 +9,7 @@ use crate::{
     platform::{Platform, Size, Type},
     player::Player,
     shape::{BOTTOM, LEFT, RIGHT, SCREEN_WIDTH, TOP},
-    texture::{AnimatedTexture, AnimationMode, Collide, Rect, Score, Texture, Transform},
+    texture::{AnimatedTexture, Collide, Rect, Score, Texture, Transform},
 };
 
 fn overlap_x(a: Rect, b: Rect) -> bool {
@@ -64,7 +64,8 @@ pub struct Game {
     elapsed_time: f32,
     spawn_time: f32,
     rand: ThreadRng,
-    score: u32,
+    fish_count: Score,
+    enemy_count: Score,
 }
 
 impl Game {
@@ -95,6 +96,12 @@ impl Game {
         controls[1].scale(0.8);
         controls[1].set_position(510.0, 160.0);
 
+        let mut fish_count = Score::new(display);
+        fish_count.set_position(-100.0, TOP - 32.0);
+
+        let mut enemy_count = Score::new(display);
+        enemy_count.set_position(100.0, TOP - 32.0);
+
         Game {
             player: p,
             platforms: platforms,
@@ -103,7 +110,8 @@ impl Game {
             elapsed_time: 0.0,
             spawn_time: 0.0,
             rand: rand::thread_rng(),
-            score: 0,
+            fish_count: fish_count,
+            enemy_count: enemy_count,
         }
     }
 
@@ -122,7 +130,7 @@ impl Game {
                         if intersect(&self.platforms[i].fish[j].texture, &self.player.texture)
                             && !self.platforms[i].fish[j].taken
                         {
-                            self.score += 1;
+                            self.fish_count.increment(display);
                             self.platforms[i].fish[j].taken = true;
                         }
                     }
@@ -133,7 +141,10 @@ impl Game {
                             .player
                             .texture
                             .collide_bottom(&self.platforms[i].enemies[j].texture)
+                            && !self.player.dead
+                            && !self.platforms[i].enemies[j].dead
                         {
+                            self.enemy_count.increment(display);
                             self.platforms[i].enemies[j].dead = true;
                         } else if player_killed(&self.player, &self.platforms[i].enemies[j]) {
                             self.player.dead = true;
@@ -159,7 +170,11 @@ impl Game {
                 self.enemies[i].set_position(x, y);
                 self.enemies[i].dead = false;
             }
-            if self.player.texture.collide_bottom(&self.enemies[i].texture) && !self.player.dead{
+            if self.player.texture.collide_bottom(&self.enemies[i].texture)
+                && !self.player.dead
+                && !self.enemies[i].dead
+            {
+                self.enemy_count.increment(display);
                 self.enemies[i].dead = true;
             } else if player_killed(&self.player, &self.enemies[i]) {
                 self.player.dead = true;
@@ -288,5 +303,8 @@ impl Game {
         for i in 0..self.enemies.len() {
             self.enemies[i].draw(target, program);
         }
+
+        self.fish_count.draw(target, program);
+        self.enemy_count.draw(target, program);
     }
 }

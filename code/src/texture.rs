@@ -58,7 +58,11 @@ impl Texture {
 
         let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
 
-        let rect = Rectangle::new(display, image_dimensions.0, image_dimensions.1);
+        let rect = Rectangle::new(
+            display,
+            image_dimensions.0 as f32,
+            image_dimensions.1 as f32,
+        );
 
         Self {
             width: image_dimensions.0 as f32,
@@ -362,27 +366,37 @@ impl Score {
         let mut temp = self.value;
         let mut i = 0;
         while temp > 0 && i < self.textures.len() {
-            let x = self.textures[i].x;
+            let (x, y) = (self.textures[i].x, self.textures[i].y);
             if temp % 10 != 0 {
                 self.textures[i] =
                     Texture::new(format!("./res/digits/{}.png", temp % 10).as_str(), display);
-                self.textures[i].set_x(x);
+                self.textures[i].set_position(x, y);
                 return;
             } else {
                 self.textures[i] = Texture::new("./res/digits/0.png", display);
-                self.textures[i].set_x(x);
+                self.textures[i].set_position(x, y);
             }
             i += 1;
             temp /= 10;
         }
 
+        let i = self.textures.len();
+        let x = self.textures[i-1].x;
+        let y = self.textures[i-1].y;
         self.textures
             .push(Texture::new("./res/digits/1.png", display));
         let i = self.textures.len();
-        let w0 = self.textures[i - 1].width / 2.;
-        let w1 = self.textures[i - 2].width / 2.;
-        let x = self.textures[i - 2].x;
-        self.textures[i - 1].set_x(x - w0 - w1);
+        self.textures[i - 1].set_position(x, y);
+
+        for i in 0..self.textures.len() - 1 {
+            let x = self.textures[i].x;
+            let w = self.textures[i].width;
+            self.textures[i].set_x(x + w);
+        }
+    }
+
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        self.textures[0].set_position(x, y);
     }
 
     pub fn draw(&self, target: &mut glium::Frame, program: &glium::Program) {
