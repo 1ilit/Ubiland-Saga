@@ -4,7 +4,6 @@ use glium::{Display, Frame, Program};
 use crate::background::Background;
 use crate::game::Game;
 use crate::input_mgr::InputManager;
-use crate::shape::SCREEN_WIDTH;
 use crate::start_screen::StartScreen;
 use crate::texture::{Texture, Transform};
 
@@ -12,6 +11,47 @@ enum Screen {
     Start,
     Play,
     GameOver,
+    Pause,
+}
+
+pub struct Pause {
+    pub menu: Texture,
+    pub cursor: Texture,
+    pub menu_choice: i8,
+}
+
+impl Pause {
+    pub fn new(display: &Display) -> Self {
+        let mut menu = Texture::new("./res/pause_menu.png", display);
+        menu.scale(0.7);
+        menu.set_position(0.0, 0.0);
+
+        let mut cursor = Texture::new("./res/cursor.png", display);
+        cursor.scale(1.5);
+        cursor.set_position(0.0, 45.0);
+
+        Self {
+            menu: menu,
+            cursor: cursor,
+            menu_choice: 0,
+        }
+    }
+
+    pub fn update(&mut self, input: &mut InputManager) {
+        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 2 {
+            self.menu_choice += 1;
+            self.cursor.translate(0., -40.);
+        }
+        if input.key_went_up(VirtualKeyCode::Up) && self.menu_choice > 0 {
+            self.menu_choice -= 1;
+            self.cursor.translate(0., 40.);
+        }
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.menu.draw(target, program);
+        self.cursor.draw(target, program);
+    }
 }
 
 pub struct GameOver {
@@ -77,6 +117,7 @@ pub struct ScreenMgr {
     pub game: Game,
     pub start: StartScreen,
     pub game_over: GameOver,
+    pub pause: Pause,
     pub input: InputManager,
     current_screen: Screen,
     background: Background,
@@ -93,6 +134,7 @@ impl ScreenMgr {
             game: game,
             start: start,
             game_over: GameOver::new(display),
+            pause: Pause::new(display),
             input: input,
             current_screen: Screen::Start,
             background: background,
@@ -113,6 +155,9 @@ impl ScreenMgr {
                 if self.game.game_over(dt) {
                     self.current_screen = Screen::GameOver;
                 }
+                if self.game.paused(){
+                    self.current_screen=Screen::Pause;
+                }
             }
             Screen::GameOver => {
                 self.game_over.update(&mut self.input, dt);
@@ -124,6 +169,21 @@ impl ScreenMgr {
                     && self.input.key_went_up(VirtualKeyCode::Return)
                 {
                     self.current_screen = Screen::Start;
+                }
+            }
+            Screen::Pause => {
+                self.pause.update(&mut self.input);
+                if self.pause.menu_choice == 0 && self.input.key_went_up(VirtualKeyCode::Return) {
+                    self.current_screen = Screen::Play;
+                    self.game.resume();
+                }
+                else if self.pause.menu_choice == 1 && self.input.key_went_up(VirtualKeyCode::Return) {
+                    self.current_screen = Screen::Play;
+                    self.game.restart(display);
+                    self.game.resume();
+                } else if self.pause.menu_choice == 2 && self.input.key_went_up(VirtualKeyCode::Return){
+                    self.current_screen = Screen::Start;
+                    self.game.resume();
                 }
             }
         }
@@ -140,6 +200,9 @@ impl ScreenMgr {
             }
             Screen::GameOver => {
                 self.game_over.draw(target, program);
+            }
+            Screen::Pause => {
+                self.pause.draw(target, program);
             }
         }
     }

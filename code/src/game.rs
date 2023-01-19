@@ -100,7 +100,7 @@ impl Topbar {
         }
     }
 
-    pub fn reset(&mut self, display: &Display){
+    pub fn reset(&mut self, display: &Display) {
         self.fish_score.reset(display);
         self.enemy_score.reset(display);
         self.distance.reset(display);
@@ -172,21 +172,21 @@ impl Game {
         }
     }
 
-    pub fn restart(&mut self, display: &Display){
-        self.game_over_delay=0.0;
-        
+    pub fn restart(&mut self, display: &Display) {
+        self.game_over_delay = 0.0;
+
         self.platforms[3].set_position(510.0, -100.0);
         self.platforms[2].set_position(800.0, -150.0);
         self.platforms[1].set_position(1060.0, 50.0);
         self.platforms[0].set_position(LEFT + 100.0, -50.0);
 
-        for i in 0..self.platforms.len(){
+        for i in 0..self.platforms.len() {
             self.platforms[i].set_type(Type::Plain);
         }
-        
+
         self.controls[0].set_position(-210.0, 160.0);
         self.controls[1].set_position(510.0, 160.0);
-        
+
         self.enemies.clear();
         self.player.reset();
         self.topbar.reset(display);
@@ -202,7 +202,23 @@ impl Game {
         false
     }
 
+    pub fn paused(&self) -> bool {
+        self.paused
+    }
+
+    pub fn resume(&mut self) {
+        self.paused = false;
+    }
+
     pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
+        if input.key_went_up(VirtualKeyCode::Escape) {
+            self.paused = true;
+        }
+
+        if self.paused {
+            return;
+        }
+
         self.player.update(input, dt);
 
         for i in 0..self.platforms.len() {
