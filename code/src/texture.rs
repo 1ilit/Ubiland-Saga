@@ -359,6 +359,17 @@ impl Score {
         }
     }
 
+    pub fn reset(&mut self, display: &Display) {
+        self.value = 0;
+
+        let i = self.textures.len();
+        let x = self.textures[i - 1].x;
+        let y = self.textures[i - 1].y;
+        self.textures.clear();
+        self.textures.push(Texture::new("./res/digits/0.png", display));
+        self.textures[0].set_position(x, y);
+    }
+
     pub fn increment(&mut self, display: &Display) {
         self.value += 1;
         let mut temp = self.value;
@@ -379,8 +390,8 @@ impl Score {
         }
 
         let i = self.textures.len();
-        let x = self.textures[i-1].x;
-        let y = self.textures[i-1].y;
+        let x = self.textures[i - 1].x;
+        let y = self.textures[i - 1].y;
         self.textures
             .push(Texture::new("./res/digits/1.png", display));
         let i = self.textures.len();

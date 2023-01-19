@@ -63,6 +63,13 @@ impl Player {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.dead = false;
+        self.x = BOTTOM + 48.0;
+        self.y = 120.0;
+        self.velocity = [0.0, 0.0];
+    }
+
     pub fn apply_gravity(&mut self, dt: f32) {
         self.y += self.velocity[1];
         if self.y + self.velocity[1] >= BOTTOM - self.height {
@@ -81,6 +88,12 @@ impl Player {
             self.apply_gravity(dt);
             return;
         }
+
+        if self.y < BOTTOM - self.height / 2.0 {
+            self.dead = true;
+            return;
+        }
+
         self.texture.update(dt);
         self.x += self.velocity[0];
 

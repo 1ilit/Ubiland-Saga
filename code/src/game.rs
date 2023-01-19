@@ -100,6 +100,12 @@ impl Topbar {
         }
     }
 
+    pub fn reset(&mut self, display: &Display){
+        self.fish_score.reset(display);
+        self.enemy_score.reset(display);
+        self.distance.reset(display);
+    }
+
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
         self.fish_score.draw(target, program);
         self.fish_label.draw(target, program);
@@ -118,6 +124,7 @@ pub struct Game {
     controls: Vec<Texture>,
     elapsed_time: f32,
     spawn_time: f32,
+    game_over_delay: f32,
     rand: ThreadRng,
     topbar: Topbar,
     paused: bool,
@@ -151,12 +158,6 @@ impl Game {
         controls[1].scale(0.8);
         controls[1].set_position(510.0, 160.0);
 
-        let mut fish_count = Score::new(display);
-        fish_count.set_position(-100.0, TOP - 32.0);
-
-        let mut enemy_count = Score::new(display);
-        enemy_count.set_position(100.0, TOP - 32.0);
-
         Game {
             player: p,
             platforms: platforms,
@@ -164,14 +165,41 @@ impl Game {
             controls: controls,
             elapsed_time: 0.0,
             spawn_time: 0.0,
+            game_over_delay: 0.0,
             rand: rand::thread_rng(),
             topbar: Topbar::new(display),
             paused: false,
         }
     }
 
-    pub fn game_over(&self) -> bool {
-        self.player.dead
+    pub fn restart(&mut self, display: &Display){
+        self.game_over_delay=0.0;
+        
+        self.platforms[3].set_position(510.0, -100.0);
+        self.platforms[2].set_position(800.0, -150.0);
+        self.platforms[1].set_position(1060.0, 50.0);
+        self.platforms[0].set_position(LEFT + 100.0, -50.0);
+
+        for i in 0..self.platforms.len(){
+            self.platforms[i].set_type(Type::Plain);
+        }
+        
+        self.controls[0].set_position(-210.0, 160.0);
+        self.controls[1].set_position(510.0, 160.0);
+        
+        self.enemies.clear();
+        self.player.reset();
+        self.topbar.reset(display);
+    }
+
+    pub fn game_over(&mut self, dt: f32) -> bool {
+        if self.player.dead {
+            self.game_over_delay += dt;
+            if self.game_over_delay > 3.0 {
+                return true;
+            }
+        }
+        false
     }
 
     pub fn update(&mut self, input: &mut InputManager, display: &Display, dt: f32) {
