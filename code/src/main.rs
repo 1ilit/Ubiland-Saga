@@ -16,7 +16,6 @@ use std::time::Instant;
 use crate::screen_mgr::ScreenMgr;
 
 fn main() {
-    println!("Hello, world!");
     use glium::glutin::dpi::PhysicalSize;
     use glium::{glutin, Surface};
 

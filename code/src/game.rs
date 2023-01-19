@@ -120,6 +120,7 @@ pub struct Game {
     spawn_time: f32,
     rand: ThreadRng,
     topbar: Topbar,
+    paused: bool,
 }
 
 impl Game {
@@ -165,6 +166,7 @@ impl Game {
             spawn_time: 0.0,
             rand: rand::thread_rng(),
             topbar: Topbar::new(display),
+            paused: false,
         }
     }
 

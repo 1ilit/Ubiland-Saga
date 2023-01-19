@@ -197,7 +197,6 @@ pub struct AnimatedTexture {
     speed: f32,
     mode: AnimationMode,
     animation_timer: f32,
-    time_per_frame: f32,
     animation_done: bool,
     current_frame: u8,
     frame_count: usize,
@@ -221,7 +220,6 @@ impl AnimatedTexture {
             animation_timer: 0.0,
             mode: AnimationMode::Loop,
             animation_done: false,
-            time_per_frame: speed / frames as f32,
             current_frame: 0,
             frame_count: frames,
         }
