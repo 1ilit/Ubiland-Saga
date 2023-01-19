@@ -56,6 +56,61 @@ fn player_killed(player: &Player, enemy: &Enemy) -> bool {
         && !enemy.dead
 }
 
+pub struct Topbar {
+    pub fish_score: Score,
+    pub fish_label: Texture,
+    pub enemy_score: Score,
+    pub enemy_label: Texture,
+    pub flag_label: Texture,
+    pub distance: Score,
+    pub stop_button: Texture,
+}
+
+impl Topbar {
+    pub fn new(display: &Display) -> Self {
+        let mut fish_label = Texture::new("./res/fish_label.png", display);
+        fish_label.set_position(LEFT + 32.0, TOP - 32.0);
+
+        let mut fish_score = Score::new(display);
+        fish_score.set_position(LEFT + 80.0, TOP - 32.0);
+
+        let mut enemy_score = Score::new(display);
+        enemy_score.set_position(LEFT + 268.0, TOP - 32.0);
+
+        let mut enemy_label = Texture::new("./res/monsta.png", display);
+        enemy_label.set_position(LEFT + 220.0, TOP - 30.0);
+
+        let mut flag_label = Texture::new("./res/flag.png", display);
+        flag_label.set_position(32.0, TOP - 32.0);
+
+        let mut distance = Score::new(display);
+        distance.set_position(80.0, TOP - 32.0);
+
+        let mut stop_button = Texture::new("./res/pause_button.png", display);
+        stop_button.set_position(RIGHT - 40.0, TOP - 32.0);
+
+        Self {
+            fish_score: fish_score,
+            fish_label: fish_label,
+            enemy_score: enemy_score,
+            enemy_label: enemy_label,
+            flag_label: flag_label,
+            distance: distance,
+            stop_button: stop_button,
+        }
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.fish_score.draw(target, program);
+        self.fish_label.draw(target, program);
+        self.enemy_label.draw(target, program);
+        self.enemy_score.draw(target, program);
+        self.flag_label.draw(target, program);
+        self.distance.draw(target, program);
+        self.stop_button.draw(target, program);
+    }
+}
+
 pub struct Game {
     player: Player,
     platforms: Vec<Platform>,
@@ -64,8 +119,7 @@ pub struct Game {
     elapsed_time: f32,
     spawn_time: f32,
     rand: ThreadRng,
-    fish_count: Score,
-    enemy_count: Score,
+    topbar: Topbar,
 }
 
 impl Game {
@@ -110,8 +164,7 @@ impl Game {
             elapsed_time: 0.0,
             spawn_time: 0.0,
             rand: rand::thread_rng(),
-            fish_count: fish_count,
-            enemy_count: enemy_count,
+            topbar: Topbar::new(display),
         }
     }
 
@@ -130,7 +183,7 @@ impl Game {
                         if intersect(&self.platforms[i].fish[j].texture, &self.player.texture)
                             && !self.platforms[i].fish[j].taken
                         {
-                            self.fish_count.increment(display);
+                            self.topbar.fish_score.increment(display);
                             self.platforms[i].fish[j].taken = true;
                         }
                     }
@@ -144,7 +197,7 @@ impl Game {
                             && !self.player.dead
                             && !self.platforms[i].enemies[j].dead
                         {
-                            self.enemy_count.increment(display);
+                            self.topbar.enemy_score.increment(display);
                             self.platforms[i].enemies[j].dead = true;
                         } else if player_killed(&self.player, &self.platforms[i].enemies[j]) {
                             self.player.dead = true;
@@ -174,7 +227,7 @@ impl Game {
                 && !self.player.dead
                 && !self.enemies[i].dead
             {
-                self.enemy_count.increment(display);
+                self.topbar.enemy_score.increment(display);
                 self.enemies[i].dead = true;
             } else if player_killed(&self.player, &self.enemies[i]) {
                 self.player.dead = true;
@@ -274,8 +327,9 @@ impl Game {
             }
         }
 
-        if self.player.distance < 0.0 {
-            return;
+        if self.player.distance > 0.5 {
+            self.topbar.distance.increment(display);
+            self.player.distance = 0.0;
         }
 
         self.spawn_time += dt;
@@ -304,7 +358,6 @@ impl Game {
             self.enemies[i].draw(target, program);
         }
 
-        self.fish_count.draw(target, program);
-        self.enemy_count.draw(target, program);
+        self.topbar.draw(target, program);
     }
 }
