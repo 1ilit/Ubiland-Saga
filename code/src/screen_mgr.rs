@@ -155,8 +155,8 @@ impl ScreenMgr {
                 if self.game.game_over(dt) {
                     self.current_screen = Screen::GameOver;
                 }
-                if self.game.paused(){
-                    self.current_screen=Screen::Pause;
+                if self.game.paused() {
+                    self.current_screen = Screen::Pause;
                 }
             }
             Screen::GameOver => {
@@ -176,12 +176,15 @@ impl ScreenMgr {
                 if self.pause.menu_choice == 0 && self.input.key_went_up(VirtualKeyCode::Return) {
                     self.current_screen = Screen::Play;
                     self.game.resume();
-                }
-                else if self.pause.menu_choice == 1 && self.input.key_went_up(VirtualKeyCode::Return) {
+                } else if self.pause.menu_choice == 1
+                    && self.input.key_went_up(VirtualKeyCode::Return)
+                {
                     self.current_screen = Screen::Play;
                     self.game.restart(display);
                     self.game.resume();
-                } else if self.pause.menu_choice == 2 && self.input.key_went_up(VirtualKeyCode::Return){
+                } else if self.pause.menu_choice == 2
+                    && self.input.key_went_up(VirtualKeyCode::Return)
+                {
                     self.current_screen = Screen::Start;
                     self.game.resume();
                 }

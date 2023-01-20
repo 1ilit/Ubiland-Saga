@@ -81,7 +81,7 @@ impl Texture {
         }
     }
 
-    pub fn get_dimensions(&self) -> (f32, f32) {
+    pub fn _get_dimensions(&self) -> (f32, f32) {
         (self.width, self.height)
     }
 }

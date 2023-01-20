@@ -104,7 +104,7 @@ impl Enemy {
         self.x = x;
     }
 
-    pub fn set_y(&mut self, y: f32) {
+    pub fn _set_y(&mut self, y: f32) {
         self.texture.set_y(y);
         self.death.set_y(y);
         self.y = y;
