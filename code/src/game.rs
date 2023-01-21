@@ -44,11 +44,11 @@ impl Level {
 
         let mut controls: Vec<Texture> = vec![];
 
-        controls.push(Texture::new("./res/controls1.png", display));
+        controls.push(Texture::new("./res/gui/controls1.png", display));
         controls[0].scale(0.8);
         controls[0].set_position(-210.0, 160.0);
 
-        controls.push(Texture::new("./res/controls2.png", display));
+        controls.push(Texture::new("./res/gui/controls2.png", display));
         controls[1].scale(0.8);
         controls[1].set_position(510.0, 160.0);
 

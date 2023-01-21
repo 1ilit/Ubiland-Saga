@@ -28,10 +28,10 @@ impl Player {
         let texture = AnimatedTexture::new(
             display,
             vec![
-                "./res/ubi1.png",
-                "./res/ubi2.png",
-                "./res/ubi3.png",
-                "./res/ubi4.png",
+                "./res/player/ubi1.png",
+                "./res/player/ubi2.png",
+                "./res/player/ubi3.png",
+                "./res/player/ubi4.png",
             ],
             0.2,
             3,
@@ -40,11 +40,11 @@ impl Player {
         let mut death = AnimatedTexture::new(
             display,
             vec![
-                "./res/ubi_death_1.png",
-                "./res/ubi_death_2.png",
-                "./res/ubi_death_3.png",
-                "./res/ubi_death_4.png",
-                "./res/ubi_death_5.png",
+                "./res/player/ubi_death_1.png",
+                "./res/player/ubi_death_2.png",
+                "./res/player/ubi_death_3.png",
+                "./res/player/ubi_death_4.png",
+                "./res/player/ubi_death_5.png",
             ],
             0.15,
             5,

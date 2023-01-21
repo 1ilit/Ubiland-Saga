@@ -7,7 +7,7 @@ mod input_mgr;
 mod player;
 mod screen_mgr;
 mod shape;
-mod start_screen;
+mod screens;
 mod texture;
 mod platform;
 mod enemy;

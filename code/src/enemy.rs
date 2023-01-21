@@ -33,16 +33,16 @@ impl Enemy {
             Species::Land => {
                 texture = AnimatedTexture::new(
                     display,
-                    vec!["./res/enemy1.png", "./res/enemy2.png"],
+                    vec!["./res/enemy/land_enemy_1.png", "./res/enemy/land_enemy_2.png"],
                     0.3,
                     2,
                 );
                 death = AnimatedTexture::new(
                     display,
                     vec![
-                        "./res/land_enemy_death_1.png",
-                        "./res/land_enemy_death_2.png",
-                        "./res/land_enemy_death_3.png",
+                        "./res/enemy/land_enemy_death_1.png",
+                        "./res/enemy/land_enemy_death_2.png",
+                        "./res/enemy/land_enemy_death_3.png",
                     ],
                     0.35,
                     3,
@@ -53,13 +53,13 @@ impl Enemy {
                 texture = AnimatedTexture::new(
                     display,
                     vec![
-                        "./res/enemy3.png",
-                        "./res/enemy4.png",
-                        "./res/enemy5.png",
-                        "./res/enemy6.png",
-                        "./res/enemy5.png",
-                        "./res/enemy4.png",
-                        "./res/enemy3.png",
+                        "./res/enemy/flying_enemy_1.png",
+                        "./res/enemy/flying_enemy_2.png",
+                        "./res/enemy/flying_enemy_3.png",
+                        "./res/enemy/flying_enemy_4.png",
+                        "./res/enemy/flying_enemy_3.png",
+                        "./res/enemy/flying_enemy_2.png",
+                        "./res/enemy/flying_enemy_1.png",
                     ],
                     0.15,
                     7,
@@ -67,9 +67,9 @@ impl Enemy {
                 death = AnimatedTexture::new(
                     display,
                     vec![
-                        "./res/flying_enemy_death_1.png",
-                        "./res/flying_enemy_death_2.png",
-                        "./res/flying_enemy_death_3.png",
+                        "./res/enemy/flying_enemy_death_1.png",
+                        "./res/enemy/flying_enemy_death_2.png",
+                        "./res/enemy/flying_enemy_death_3.png",
                     ],
                     0.35,
                     3,

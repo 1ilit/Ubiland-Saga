@@ -14,13 +14,13 @@ pub struct Background {
 
 impl Background {
     pub fn new(display: &Display) -> Self {
-        let mut big_cloud1 = Texture::new("./res/big_cloud.png", display);
+        let mut big_cloud1 = Texture::new("./res/background/big_cloud.png", display);
         big_cloud1.set_position(0., BOTTOM + big_cloud1.height / 2.);
 
-        let mut big_cloud2 = Texture::new("./res/big_cloud.png", display);
+        let mut big_cloud2 = Texture::new("./res/background/big_cloud.png", display);
         big_cloud2.set_position(SCREEN_WIDTH - 3., BOTTOM + big_cloud2.height / 2.);
 
-        let mut big_cloud3 = Texture::new("./res/rainbow.png", display);
+        let mut big_cloud3 = Texture::new("./res/background/rainbow.png", display);
         big_cloud3.set_position(SCREEN_WIDTH - 3., BOTTOM + big_cloud3.height / 2.);
 
         let clouds = [big_cloud1, big_cloud2, big_cloud3];
@@ -35,11 +35,11 @@ impl Background {
         );
 
         let mut array = [
-            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
-            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
-            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
-            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
-            AnimatedTexture::new(display, vec!["./res/bird1.png", "./res/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/background/bird1.png", "./res/background/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/background/bird1.png", "./res/background/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/background/bird1.png", "./res/background/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/background/bird1.png", "./res/background/bird2.png"], 0.3, 2),
+            AnimatedTexture::new(display, vec!["./res/background/bird1.png", "./res/background/bird2.png"], 0.3, 2),
         ];
 
         array[0].set_position(0.0, 0.0);

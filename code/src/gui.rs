@@ -82,7 +82,7 @@ pub struct Topbar {
 
 impl Topbar {
     pub fn new(display: &Display) -> Self {
-        let mut fish_label = Texture::new("./res/fish_label.png", display);
+        let mut fish_label = Texture::new("./res/gui/fish_label.png", display);
         fish_label.set_position(LEFT + 32.0, TOP - 32.0);
 
         let mut fish_score = Score::new(display);
@@ -91,16 +91,16 @@ impl Topbar {
         let mut enemy_score = Score::new(display);
         enemy_score.set_position(LEFT + 268.0, TOP - 32.0);
 
-        let mut enemy_label = Texture::new("./res/monsta.png", display);
+        let mut enemy_label = Texture::new("./res/gui/monsta.png", display);
         enemy_label.set_position(LEFT + 220.0, TOP - 30.0);
 
-        let mut flag_label = Texture::new("./res/flag.png", display);
+        let mut flag_label = Texture::new("./res/gui/flag.png", display);
         flag_label.set_position(32.0, TOP - 32.0);
 
         let mut distance = Score::new(display);
         distance.set_position(80.0, TOP - 32.0);
 
-        let mut stop_button = Texture::new("./res/pause_button.png", display);
+        let mut stop_button = Texture::new("./res/gui/pause_button.png", display);
         stop_button.set_position(RIGHT - 40.0, TOP - 32.0);
 
         Self {

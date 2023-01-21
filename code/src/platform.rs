@@ -47,7 +47,7 @@ pub struct Fish {
 impl Fish {
     pub fn new(display: &Display) -> Self {
         Self {
-            texture: Texture::new("./res/fish.png", display),
+            texture: Texture::new("./res/platforms/fish.png", display),
             x: 0.0,
             y: 0.0,
             taken: false,
@@ -98,19 +98,19 @@ impl Platform {
         let width: f32;
         match size {
             Size::Small => {
-                texture = Texture::new("./res/platform_2.png", display);
+                texture = Texture::new("./res/platforms/small.png", display);
                 width = 96.0;
             }
             Size::Medium => {
-                texture = Texture::new("./res/platform_3.png", display);
+                texture = Texture::new("./res/platforms/medium.png", display);
                 width = 144.0;
             }
             Size::Large => {
-                texture = Texture::new("./res/platform_5.png", display);
+                texture = Texture::new("./res/platforms/large.png", display);
                 width = 240.0;
             }
             Size::XLarge => {
-                texture = Texture::new("./res/platform_7.png", display);
+                texture = Texture::new("./res/platforms/xlarge.png", display);
                 width = 336.0;
             }
         }
