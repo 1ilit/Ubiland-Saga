@@ -20,8 +20,8 @@ pub struct Enemy {
     pub height: f32,
     pub texture: AnimatedTexture,
     pub speed: f32,
-    pub dead: bool,
-    pub death: AnimatedTexture,
+    pub is_dead: bool,
+    pub death_animation: AnimatedTexture,
     pub y_velocity: f32,
 }
 
@@ -85,35 +85,43 @@ impl Enemy {
             height: height,
             speed: 200.0,
             texture: texture,
-            dead: false,
-            death: death,
+            is_dead: false,
+            death_animation: death,
             y_velocity: 0.0,
         }
     }
 
     pub fn set_position(&mut self, x: f32, y: f32) {
         self.texture.set_position(x, y);
-        self.death.set_position(x, y);
+        self.death_animation.set_position(x, y);
         self.x = x;
         self.y = y;
     }
 
     pub fn set_x(&mut self, x: f32) {
         self.texture.set_x(x);
-        self.death.set_x(x);
+        self.death_animation.set_x(x);
         self.x = x;
     }
 
     pub fn _set_y(&mut self, y: f32) {
         self.texture.set_y(y);
-        self.death.set_y(y);
+        self.death_animation.set_y(y);
         self.y = y;
     }
 
+    pub fn is_dead(&self) -> bool {
+        self.is_dead
+    }
+
+    pub fn set_dead(&mut self, b: bool) {
+        self.is_dead = b;
+    }
+
     pub fn translate(&mut self, x: f32, y: f32) {
-        if !self.dead {
+        if !self.is_dead {
             self.texture.translate(x, y);
-            self.death.translate(x, y);
+            self.death_animation.translate(x, y);
             self.x = self.texture.x;
             self.y = self.texture.y;
         }
@@ -130,18 +138,18 @@ impl Enemy {
     }
 
     pub fn update(&mut self, dt: f32) {
-        if !self.dead {
+        if !self.is_dead {
             self.texture.update(dt);
         } else {
-            self.death.update(dt);
+            self.death_animation.update(dt);
         }
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        if !self.dead {
+        if !self.is_dead {
             self.texture.draw(target, program);
         } else {
-            self.death.draw(target, program);
+            self.death_animation.draw(target, program);
         }
     }
 }

@@ -8,7 +8,7 @@ use crate::texture::{AnimatedTexture, Texture, Transform};
 pub struct Background {
     background_clouds: [Texture; 3],
     birds: [AnimatedTexture; 5],
-    rect: Rectangle,
+    background_gradient: Rectangle,
     rand: ThreadRng,
 }
 
@@ -51,7 +51,7 @@ impl Background {
         Background {
             background_clouds: clouds,
             birds: array,
-            rect: rect,
+            background_gradient: rect,
             rand: rand::thread_rng(),
         }
     }
@@ -84,7 +84,7 @@ impl Background {
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        self.rect.draw(target, program);
+        self.background_gradient.draw(target, program);
 
         for i in 0..3 {
             self.background_clouds[i].draw(target, program);

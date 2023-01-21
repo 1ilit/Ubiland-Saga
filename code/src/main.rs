@@ -11,6 +11,8 @@ mod start_screen;
 mod texture;
 mod platform;
 mod enemy;
+mod collision;
+mod gui;
 
 use std::time::Instant;
 use crate::screen_mgr::ScreenMgr;

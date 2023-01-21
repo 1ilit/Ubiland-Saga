@@ -2,7 +2,7 @@ use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
 use crate::background::Background;
-use crate::game::Game;
+use crate::game::Level;
 use crate::input_mgr::InputManager;
 use crate::start_screen::StartScreen;
 use crate::texture::{Texture, Transform};
@@ -114,7 +114,7 @@ impl GameOver {
 }
 
 pub struct ScreenMgr {
-    pub game: Game,
+    pub level: Level,
     pub start: StartScreen,
     pub game_over: GameOver,
     pub pause: Pause,
@@ -125,13 +125,13 @@ pub struct ScreenMgr {
 
 impl ScreenMgr {
     pub fn new(display: &Display) -> Self {
-        let game = Game::new(display);
+        let level = Level::new(display);
         let start = StartScreen::new(display);
         let input = InputManager::new();
         let background = Background::new(display);
 
         ScreenMgr {
-            game: game,
+            level: level,
             start: start,
             game_over: GameOver::new(display),
             pause: Pause::new(display),
@@ -151,11 +151,11 @@ impl ScreenMgr {
                 }
             }
             Screen::Play => {
-                self.game.update(&mut self.input, display, dt);
-                if self.game.game_over(dt) {
+                self.level.update(&mut self.input, display, dt);
+                if self.level.game_over(dt) {
                     self.current_screen = Screen::GameOver;
                 }
-                if self.game.paused() {
+                if self.level.paused() {
                     self.current_screen = Screen::Pause;
                 }
             }
@@ -164,7 +164,7 @@ impl ScreenMgr {
                 if self.game_over.menu_choice == 0 && self.input.key_went_up(VirtualKeyCode::Return)
                 {
                     self.current_screen = Screen::Play;
-                    self.game.restart(display);
+                    self.level.restart(display);
                 } else if self.game_over.menu_choice == 1
                     && self.input.key_went_up(VirtualKeyCode::Return)
                 {
@@ -175,18 +175,18 @@ impl ScreenMgr {
                 self.pause.update(&mut self.input);
                 if self.pause.menu_choice == 0 && self.input.key_went_up(VirtualKeyCode::Return) {
                     self.current_screen = Screen::Play;
-                    self.game.resume();
+                    self.level.resume();
                 } else if self.pause.menu_choice == 1
                     && self.input.key_went_up(VirtualKeyCode::Return)
                 {
                     self.current_screen = Screen::Play;
-                    self.game.restart(display);
-                    self.game.resume();
+                    self.level.restart(display);
+                    self.level.resume();
                 } else if self.pause.menu_choice == 2
                     && self.input.key_went_up(VirtualKeyCode::Return)
                 {
                     self.current_screen = Screen::Start;
-                    self.game.resume();
+                    self.level.resume();
                 }
             }
         }
@@ -199,7 +199,7 @@ impl ScreenMgr {
                 self.start.draw(target, program);
             }
             Screen::Play => {
-                self.game.draw(target, program);
+                self.level.draw(target, program);
             }
             Screen::GameOver => {
                 self.game_over.draw(target, program);

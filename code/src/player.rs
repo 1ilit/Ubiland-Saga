@@ -1,22 +1,26 @@
 use glium::glutin::event::VirtualKeyCode;
 use glium::{Display, Frame, Program};
 
-use crate::input_mgr::InputManager;
-use crate::shape::{BOTTOM, LEFT};
-use crate::texture::{AnimatedTexture, AnimationMode, Transform};
+use crate::{
+    enemy::Enemy,
+    gui::Topbar,
+    input_mgr::InputManager,
+    shape::{BOTTOM, LEFT},
+    texture::{AnimatedTexture, AnimationMode, Collide, Transform},
+};
 
 pub struct Player {
-    pub texture: AnimatedTexture,
-    pub death: AnimatedTexture,
     pub x: f32,
     pub y: f32,
     pub width: f32,
     pub height: f32,
+    pub texture: AnimatedTexture,
+    pub death_animation: AnimatedTexture,
     pub velocity: [f32; 2],
-    pub on_platform: bool,
-    pub right: bool,
+    pub is_on_platform: bool,
+    pub is_moving_right: bool,
     pub distance: f32,
-    pub dead: bool,
+    pub is_dead: bool,
 }
 
 impl Player {
@@ -50,21 +54,33 @@ impl Player {
         let (width, height) = texture.get_dimensions();
         Player {
             texture: texture,
-            death: death,
+            death_animation: death,
             x: BOTTOM + 48.0,
             y: 120.0,
             width: width,
             height: height,
             velocity: [0.0, 0.0],
-            on_platform: false,
-            right: false,
+            is_on_platform: false,
+            is_moving_right: false,
             distance: 0.0,
-            dead: false,
+            is_dead: false,
         }
     }
 
+    pub fn set_on_platform(&mut self, b: bool) {
+        self.is_on_platform = b;
+    }
+
+    pub fn is_dead(&self) -> bool {
+        self.is_dead
+    }
+
+    pub fn set_dead(&mut self, b: bool) {
+        self.is_dead = b;
+    }
+
     pub fn reset(&mut self) {
-        self.dead = false;
+        self.set_dead(false);
         self.x = BOTTOM + 48.0;
         self.y = 120.0;
         self.velocity = [0.0, 0.0];
@@ -78,25 +94,38 @@ impl Player {
             self.velocity[1] = 0.0;
         }
         self.texture.set_position(self.x, self.y);
-        self.death.set_position(self.x, self.y);
+        self.death_animation.set_position(self.x, self.y);
+    }
+
+    pub fn was_killed(&mut self, enemy: &Enemy) -> bool {
+        (self.texture.collide_left(&enemy.texture) || self.texture.collide_right(&enemy.texture))
+            && !enemy.is_dead()
+    }
+
+    pub fn check_interaction(&mut self, enemy: &mut Enemy, topbar: &mut Topbar, display: &Display) {
+        if self.texture.collide_bottom(&enemy.texture) && !self.is_dead && !enemy.is_dead() {
+            topbar.increment_enemy_count(display);
+            enemy.set_dead(true);
+        } else if self.was_killed(&enemy) {
+            self.set_dead(true);
+        }
     }
 
     pub fn update(&mut self, input: &mut InputManager, dt: f32) {
-        if self.dead {
-            self.right = false;
-            self.death.update(dt);
+        self.texture.update(dt);
+        if self.is_dead() {
+            self.is_moving_right = false;
+            self.death_animation.update(dt);
             self.apply_gravity(dt);
             return;
         }
 
         if self.y < BOTTOM - self.height / 2.0 {
-            self.dead = true;
+            self.set_dead(true);
             return;
         }
 
-        self.texture.update(dt);
         self.x += self.velocity[0];
-
         self.apply_gravity(dt);
 
         if input.key_down(VirtualKeyCode::Up) {
@@ -105,11 +134,11 @@ impl Player {
         if input.key_down(VirtualKeyCode::Right) {
             self.x += 200.0 * dt;
             self.distance += dt;
-            self.right = true;
+            self.is_moving_right = true;
         } else {
-            self.right = false;
+            self.is_moving_right = false;
         }
-        if input.key_down(VirtualKeyCode::Left) && self.on_platform {
+        if input.key_down(VirtualKeyCode::Left) && self.is_on_platform {
             self.x -= 200.0 * dt;
             self.distance -= dt;
         }
@@ -121,14 +150,14 @@ impl Player {
         }
 
         self.texture.set_position(self.x, self.y);
-        self.death.set_position(self.x, self.y);
+        self.death_animation.set_position(self.x, self.y);
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
-        if !self.dead {
-            self.texture.draw(target, program);
+        if self.is_dead {
+            self.death_animation.draw(target, program)
         } else {
-            self.death.draw(target, program);
-        }
+            self.texture.draw(target, program)
+        };
     }
 }

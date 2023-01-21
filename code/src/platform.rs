@@ -3,9 +3,12 @@ use std::vec;
 use glium::{Display, Frame, Program};
 
 use crate::{
+    collision::{intersect, overlap_x},
     enemy::{Enemy, Species},
+    gui::Topbar,
+    player::Player,
     shape::Direction,
-    texture::{Texture, Transform},
+    texture::{Rect, Texture, Transform},
 };
 
 #[derive(Debug, PartialEq)]
@@ -157,7 +160,7 @@ impl Platform {
             }
             Type::Enemy => {
                 for i in 0..self.enemies.len() {
-                    self.enemies[i].dead = false;
+                    self.enemies[i].set_dead(false);
                 }
             }
             _ => {}
@@ -181,6 +184,41 @@ impl Platform {
         for i in 0..self.enemies.len() {
             self.enemies[i].set_position(self.x, self.y + 78.0);
         }
+    }
+
+    pub fn player_took_fish(&mut self, display: &Display, player: &Player, topbar: &mut Topbar) {
+        for i in 0..self.fish.len() {
+            if intersect(&self.fish[i].texture, &player.texture) && !self.fish[i].taken {
+                topbar.increment_fish_count(display);
+                self.fish[i].taken = true;
+            }
+        }
+    }
+
+    pub fn player_vs_enemy(&mut self, display: &Display, player: &mut Player, topbar: &mut Topbar) {
+        for i in 0..self.enemies.len() {
+            player.check_interaction(&mut self.enemies[i], topbar, display);
+        }
+    }
+
+    pub fn player_is_on(&mut self, player: &mut Player) -> bool {
+        let b = overlap_x(
+            Rect {
+                x: player.x,
+                y: player.y,
+                w: player.width,
+                h: player.height,
+            },
+            Rect {
+                x: self.x,
+                y: self.y,
+                w: self.width,
+                h: self.height,
+            },
+        );
+        player.set_on_platform(b);
+
+        b
     }
 
     pub fn translate(&mut self, x: f32, y: f32) {
