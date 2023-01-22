@@ -4,16 +4,18 @@ use glium::{Display, Frame, Program};
 use crate::background::Background;
 use crate::game::Level;
 use crate::input_mgr::InputManager;
-use crate::screens::{StartScreen, GameOver, Pause, Screen};
+use crate::screens::{GameOver, Pause, Screen, StartScreen, Store};
 
 pub struct ScreenMgr {
     pub level: Level,
     pub start: StartScreen,
     pub game_over: GameOver,
     pub pause: Pause,
+    pub store: Store,
     pub input: InputManager,
     current_screen: Screen,
     background: Background,
+    exit: bool,
 }
 
 impl ScreenMgr {
@@ -28,10 +30,16 @@ impl ScreenMgr {
             start: start,
             game_over: GameOver::new(display),
             pause: Pause::new(display),
+            store: Store::new(display),
             input: input,
             current_screen: Screen::Start,
             background: background,
+            exit: false,
         }
+    }
+
+    pub fn exited(&self) -> bool {
+        self.exit
     }
 
     pub fn update(&mut self, display: &Display, dt: f32) {
@@ -41,6 +49,16 @@ impl ScreenMgr {
                 self.start.update(&mut self.input, dt);
                 if self.start.menu_choice == 0 && self.input.key_went_up(VirtualKeyCode::Return) {
                     self.current_screen = Screen::Play;
+                } else if self.start.menu_choice == 1 && self.input.key_went_up(VirtualKeyCode::Return) {
+                    self.current_screen = Screen::Store;
+                }else if self.start.menu_choice == 2 && self.input.key_went_up(VirtualKeyCode::Return) {
+                    self.exit=true;
+                }
+            }
+            Screen::Store=>{
+                self.store.update(&mut self.input, dt);
+                if self.store.exited(){
+                    self.current_screen=Screen::Start;
                 }
             }
             Screen::Play => {
@@ -62,10 +80,14 @@ impl ScreenMgr {
                     && self.input.key_went_up(VirtualKeyCode::Return)
                 {
                     self.current_screen = Screen::Start;
+                } else if self.game_over.menu_choice == 2
+                    && self.input.key_went_up(VirtualKeyCode::Return)
+                {
+                    self.exit = true;
                 }
             }
             Screen::Pause => {
-                self.pause.update(&mut self.input);
+                self.pause.update(&mut self.input, dt);
                 if self.pause.menu_choice == 0 && self.input.key_went_up(VirtualKeyCode::Return) {
                     self.current_screen = Screen::Play;
                     self.level.resume();
@@ -80,6 +102,10 @@ impl ScreenMgr {
                 {
                     self.current_screen = Screen::Start;
                     self.level.resume();
+                } else if self.pause.menu_choice == 3
+                    && self.input.key_went_up(VirtualKeyCode::Return)
+                {
+                    self.exit = true;
                 }
             }
         }
@@ -90,6 +116,9 @@ impl ScreenMgr {
         match self.current_screen {
             Screen::Start => {
                 self.start.draw(target, program);
+            }
+            Screen::Store=>{
+                self.store.draw(target, program);
             }
             Screen::Play => {
                 self.level.draw(target, program);

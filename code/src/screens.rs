@@ -11,6 +11,7 @@ pub enum Screen {
     Play,
     GameOver,
     Pause,
+    Store,
 }
 
 pub struct StartScreen {
@@ -31,13 +32,11 @@ impl StartScreen {
         logo.scale(1.2);
         logo.set_position(SCREEN_WIDTH / 3. - logo.width / 2. + 50., 70.);
 
-        let mut menu = Texture::new("./res/gui/menu.png", display);
-        menu.scale(0.7);
-        menu.set_position(160.0, -35.0);
+        let mut menu = Texture::new("./res/gui/start_menu.png", display);
+        menu.set_position(160.0, -85.0);
 
         let mut cursor = Texture::new("./res/gui/cursor.png", display);
-        cursor.scale(1.1);
-        cursor.set_position(SCREEN_WIDTH / 3. - cursor.width / 2. + 15., -35.);
+        cursor.set_position(SCREEN_WIDTH / 3. - cursor.width / 2. + 5.0, -45.0);
 
         let mut platform = Platform::new(display, Size::Medium);
         platform.set_position(-170.0, -60.0);
@@ -86,13 +85,13 @@ impl StartScreen {
         let y = t.sin() * 0.015;
         self.logo.translate(0.0, y);
 
-        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 0 {
+        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 2 {
             self.menu_choice += 1;
-            self.cursor.translate(0., -35.);
+            self.cursor.translate(0., -40.);
         }
         if input.key_went_up(VirtualKeyCode::Up) && self.menu_choice > 0 {
             self.menu_choice -= 1;
-            self.cursor.translate(0., 35.);
+            self.cursor.translate(0., 40.);
         }
     }
 
@@ -106,31 +105,96 @@ impl StartScreen {
     }
 }
 
+pub struct Store {
+    panel: Texture,
+    coming_soon: Texture,
+    elapsed_time: f32,
+    exited: bool,
+}
+
+impl Store {
+    pub fn new(display: &Display) -> Self {
+        Self {
+            panel: Texture::new("./res/gui/panel.png", display),
+            coming_soon: Texture::new("./res/gui/coming_soon.png", display),
+            elapsed_time: 0.0,
+            exited: false,
+        }
+    }
+
+    pub fn exited(&mut self) -> bool {
+        let temp = self.exited;
+        self.exited = false;
+        temp
+    }
+
+    pub fn update(&mut self, input: &mut InputManager, dt: f32) {
+        if input.key_went_up(VirtualKeyCode::Escape) {
+            self.exited = true;
+        }
+
+        if self.elapsed_time > 99999. {
+            self.elapsed_time = 1.0;
+        }
+
+        self.elapsed_time += dt;
+
+        let t = self.elapsed_time * 3.5;
+
+        let y = t.sin() * 0.015;
+        self.coming_soon.translate(0.0, y);
+    }
+
+    pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.panel.draw(target, program);
+        self.coming_soon.draw(target, program);
+    }
+}
+
 pub struct Pause {
-    pub menu: Texture,
-    pub cursor: Texture,
+    menu: Texture,
+    cursor: Texture,
+    panel: Texture,
     pub menu_choice: i8,
+    title: Texture,
+    elapsed_time: f32,
 }
 
 impl Pause {
     pub fn new(display: &Display) -> Self {
         let mut menu = Texture::new("./res/gui/pause_menu.png", display);
-        menu.scale(0.7);
-        menu.set_position(0.0, 0.0);
+        menu.set_position(0.0, -50.0);
 
         let mut cursor = Texture::new("./res/gui/cursor.png", display);
-        cursor.scale(1.5);
-        cursor.set_position(0.0, 45.0);
+        cursor.scale(1.3);
+        cursor.set_position(0.0, 10.0);
+
+        let mut title = Texture::new("./res/gui/game_paused.png", display);
+        title.set_position(0.0, 80.0);
 
         Self {
             menu: menu,
             cursor: cursor,
+            panel: Texture::new("./res/gui/panel.png", display),
             menu_choice: 0,
+            title: title,
+            elapsed_time: 0.0,
         }
     }
 
-    pub fn update(&mut self, input: &mut InputManager) {
-        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 2 {
+    pub fn update(&mut self, input: &mut InputManager, dt: f32) {
+        if self.elapsed_time > 99999. {
+            self.elapsed_time = 1.0;
+        }
+
+        self.elapsed_time += dt;
+
+        let t = self.elapsed_time * 3.5;
+
+        let y = t.sin() * 0.015;
+        self.title.translate(0.0, y);
+
+        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 3 {
             self.menu_choice += 1;
             self.cursor.translate(0., -40.);
         }
@@ -141,31 +205,32 @@ impl Pause {
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.panel.draw(target, program);
         self.menu.draw(target, program);
+        self.title.draw(target, program);
         self.cursor.draw(target, program);
     }
 }
 
 pub struct GameOver {
-    pub texture: Texture,
-    pub menu: Texture,
-    pub cursor: Texture,
+    texture: Texture,
+    menu: Texture,
+    cursor: Texture,
     pub menu_choice: i8,
-    pub elapsed_time: f32,
+    elapsed_time: f32,
+    panel: Texture,
 }
 
 impl GameOver {
     pub fn new(display: &Display) -> Self {
         let mut texture = Texture::new("./res/gui/game_over.png", display);
-        texture.set_y(100.0);
+        texture.set_y(80.0);
 
         let mut menu = Texture::new("./res/gui/game_over_menu.png", display);
-        menu.scale(0.7);
-        menu.set_position(0.0, -30.0);
+        menu.set_position(0.0, -50.0);
 
         let mut cursor = Texture::new("./res/gui/cursor.png", display);
-        cursor.scale(1.2);
-        cursor.set_position(0.0, -5.0);
+        cursor.set_position(0.0, -10.0);
 
         Self {
             texture: texture,
@@ -173,6 +238,7 @@ impl GameOver {
             cursor: cursor,
             menu_choice: 0,
             elapsed_time: 0.0,
+            panel: Texture::new("./res/gui/panel.png", display),
         }
     }
 
@@ -188,17 +254,18 @@ impl GameOver {
         let y = t.sin() * 0.015;
         self.texture.translate(0.0, y);
 
-        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 1 {
+        if input.key_went_up(VirtualKeyCode::Down) && self.menu_choice < 2 {
             self.menu_choice += 1;
-            self.cursor.translate(0., -45.);
+            self.cursor.translate(0., -40.);
         }
         if input.key_went_up(VirtualKeyCode::Up) && self.menu_choice > 0 {
             self.menu_choice -= 1;
-            self.cursor.translate(0., 45.);
+            self.cursor.translate(0., 40.);
         }
     }
 
     pub fn draw(&mut self, target: &mut Frame, program: &Program) {
+        self.panel.draw(target, program);
         self.texture.draw(target, program);
         self.menu.draw(target, program);
         self.cursor.draw(target, program);

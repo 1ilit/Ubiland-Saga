@@ -22,5 +22,3 @@ A flappy-bird-like game made using Rust and OpenGL
 
 <img src="./ubi.gif" alt="ubi loafing"/>
 
-the goal of this project was to learn rust so i got a bit lazy with the art, sorry
-

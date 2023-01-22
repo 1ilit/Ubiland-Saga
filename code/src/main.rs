@@ -2,20 +2,20 @@ extern crate glium;
 extern crate image;
 
 mod background;
+mod collision;
+mod enemy;
 mod game;
+mod gui;
 mod input_mgr;
+mod platform;
 mod player;
 mod screen_mgr;
-mod shape;
 mod screens;
+mod shape;
 mod texture;
-mod platform;
-mod enemy;
-mod collision;
-mod gui;
 
-use std::time::Instant;
 use crate::screen_mgr::ScreenMgr;
+use std::time::Instant;
 
 fn main() {
     use glium::glutin::dpi::PhysicalSize;
@@ -75,6 +75,11 @@ fn main() {
         }
         //update game
         screen_mgr.update(&display, delta_time);
+
+        if screen_mgr.exited() {
+            *control_flow = glutin::event_loop::ControlFlow::Exit;
+            return;
+        }
 
         let mut target = display.draw();
         target.clear_color(1.0, 1.0, 1.0, 1.0);
